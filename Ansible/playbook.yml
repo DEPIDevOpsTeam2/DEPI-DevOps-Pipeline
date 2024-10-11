@@ -1,0 +1,80 @@
+---
+- name: Provision the EC2 instance
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Check if Docker is already installed
+      shell: |
+        if ! command -v docker &> /dev/null; then
+            echo "not_installed"
+        else
+            echo "installed"
+        fi
+      register: docker_installed
+      changed_when: false # We don't want to mark this task as changed
+
+    - name: Install prerequisite packages (for Ubuntu)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+      when:
+        - docker_installed.stdout == "not_installed"
+
+    - name: Add Docker's official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when:
+        - docker_installed.stdout == "not_installed"
+
+    - name: Set up the Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+      when:
+        - docker_installed.stdout == "not_installed"
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      when:
+        - docker_installed.stdout == "not_installed"
+
+    - name: Ensure Docker service is started
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Get the value of an environment variable
+      set_fact:
+        app_img: "{{ lookup('env', 'APP_IMG') }}"
+
+    - name: Display env variable
+      debug:
+        msg: "app image is: {{ app_img }}"
+
+    - name: Gather facts about Docker images
+      docker_image_info:
+
+    - name: Check if the specified Docker image exists
+      set_fact:
+        container_exists: "{{ item }}"
+      with_items: "{{ docker_images.images }}"
+      when: item.repo_tags is defined and item.repo_tags | select('search', app_img) | list | length > 0
+      register: checked_images
+
+    - name: Create Docker container if it does not exist
+      docker_container:
+        name: solar-app
+        image: "{{ app_img }}"
+        state: started
+      when: checked_images is not defined or checked_images | selectattr('container_exists', 'defined') | list | length == 0
