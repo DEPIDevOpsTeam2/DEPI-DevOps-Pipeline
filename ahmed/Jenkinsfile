@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+    tools{
+        nodejs "node"
+    }
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+        stage('check node') {
+            steps {
+                sh'npm --version'
+            }
+        }
+        stage('check docker') {
+            steps {
+               sh 'docker version'
+            }
+        }
+    }
+}
