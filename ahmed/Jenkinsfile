@@ -13,13 +13,13 @@ pipeline{
         stage("code-coverage"){
             steps{
                 echo "========code-coverage========"
-                sh "npm run coverage"
+                sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed run coverage"
             }
         }
         stage("starting"){
             steps{
                 echo "========starting-app========"
-                sh "npm start"
+                sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed start"
             }
         }
     }
