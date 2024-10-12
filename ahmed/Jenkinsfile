@@ -1,24 +1,27 @@
-pipeline {
+pipeline{
     agent any
     tools{
         nodejs "node"
     }
-
-    stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
+    stages{
+        stage("build"){
+            steps{
+                echo "========unit-test========"
+                sh "npm test"
             }
         }
-        stage('check node') {
-            steps {
-                sh'npm --version'
+        stage("code-coverage"){
+            steps{
+                echo "========code-coverage========"
+                sh "npm run coverage"
             }
         }
-        stage('check docker') {
-            steps {
-               sh 'docker version'
+        stage("starting"){
+            steps{
+                echo "========starting-app========"
+                sh "npm start"
             }
         }
     }
+            
 }
