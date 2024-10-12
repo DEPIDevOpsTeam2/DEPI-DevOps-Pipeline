@@ -1,6 +1,6 @@
 let mongoose = require("mongoose");
 let server = require("./app");
-import chai from 'chai';
+let chai = require("chai");
 let chaiHttp = require("chai-http");
 
 
