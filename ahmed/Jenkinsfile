@@ -23,7 +23,7 @@ pipeline{
         stage("dockerize"){
             steps{
                 echo "========dockerize========"
-                sh "docker build -t $DOCKER_IMAGE ahmed/Dockerfile"
+                sh "docker build -t $DOCKER_IMAGE /var/lib/jenkins/workspace/ahmed-pipeline/ahmed"
             }
         }
         stage("docker-login"){
