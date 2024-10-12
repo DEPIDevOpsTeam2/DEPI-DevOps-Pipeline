@@ -7,8 +7,7 @@ pipeline{
         stage("build"){
             steps{
                 echo "========unit-test========"
-                sh "cd ahmed"
-                sh "npm test"
+                sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed test"
             }
         }
         stage("code-coverage"){
