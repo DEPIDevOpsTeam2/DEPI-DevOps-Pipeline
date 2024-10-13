@@ -9,9 +9,9 @@ pipeline{
     }
     stages{
         stage("build"){
-            // when {
-            //     changeset "ahmed/**"
-            // }
+            when {
+                changeset "ahmed/**"
+            }
             steps{
                 echo "========unit-test========"
                 sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed test"
