@@ -25,6 +25,14 @@ variable "aws_secret_key" {
   sensitive   = true
 }
 
+variable "key_pair_name" {
+  type = string
+}
+
+variable "ssh_public_key" {
+  type = string
+}
+
 variable "db_name" {
   description = "The port no."
   type        = string

@@ -4,21 +4,21 @@ resource "aws_s3_bucket" "my_bucket" {
 }
 
 # Store .json file, solar system db
-resource "aws_s3_bucket_object" "my_json_file" {
+resource "aws_s3_object" "my_json_file" {
   bucket = aws_s3_bucket.my_bucket.id
   key    = "superData.planets.json"
   source = "superData.planets.json" # Path to JSON file
 }
 
 # Store .pem file, certificate required to authenticate to your cluster
-resource "aws_s3_bucket_object" "my_pem_file" {
+resource "aws_s3_object" "my_pem_file" {
   bucket = aws_s3_bucket.my_bucket.id
   key    = "global-bundle.pem"
   source = "global-bundle.pem" # Path to .pem file
 }
 
 # Store .tfstate file, terraform state file
-resource "aws_s3_bucket_object" "my_state_file" {
+resource "aws_s3_object" "my_state_file" {
   bucket = aws_s3_bucket.my_bucket.id
   key    = "terraform.tfstate"
   source = "terraform.tfstate" # Path to .tfstate file
@@ -86,11 +86,11 @@ resource "aws_security_group" "docdb_sg" {
   vpc_id = aws_vpc.solar_system_vpc.id
 
   ingress {
-    from_port = 27017 # MongoDB default port
-    to_port   = 27017
-    protocol  = "tcp"
-    security_groups = [aws_security_group.app_sg.id] # Allow traffic from EC2 security group
-    cidr_blocks = [aws_subnet.private_subnet_1.cidr_block, aws_subnet.private_subnet_2.cidr_block] # Allow traffic from private subnet
+    from_port       = 27017 # MongoDB default port
+    to_port         = 27017
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_sg.id]                                                   # Allow traffic from EC2 security group
+    cidr_blocks     = [aws_subnet.private_subnet_1.cidr_block, aws_subnet.private_subnet_2.cidr_block] # Allow traffic from private subnet
   }
 }
 
@@ -142,9 +142,15 @@ resource "aws_security_group" "app_sg" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1" # Allow all protocols
+    protocol    = "-1"          # Allow all protocols
     cidr_blocks = ["0.0.0.0/0"] # Allow outbound traffic to anywhere
   }
+}
+
+# Create a key pair for ec2
+resource "aws_key_pair" "web_key_pair" {
+  key_name   = var.key_pair_name
+  public_key = var.ssh_public_key
 }
 
 # Create EC2 Instance for Solar System App
@@ -155,6 +161,7 @@ resource "aws_instance" "solar_system_app" {
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   # Add depends_on to ensure the DocumentDB cluster is created first
   depends_on = [aws_docdb_cluster.solar_system_db]
+  key_name   = aws_key_pair.web_key_pair.key_name
 
   tags = {
     Name = "SolarSystemApp"
@@ -163,22 +170,5 @@ resource "aws_instance" "solar_system_app" {
   # User data script to install and start your application
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt update
-              sudo apt install ssh -y
-              sudo systemctl start sshd
-              sudo apt update -y
-              sudo apt install -y awscli
-              sudo aws s3 cp s3://my_bucket/global-bundle.pem /home/ubuntu/global-bundle.pem
-              sudo chmod 400 /home/ubuntu/global-bundle.pem
               EOF
-}
-
-# Ec2 public ip to be used in Ansible
-output "instance_public_ip" {
-  value = aws_instance.solar_system_app.public_ip
-}
-
-# Out endpoint to connect app to the DocumentDB instance by using the endpoint in connection string
-output "db_endpoint" {
-  value = aws_docdb_cluster.solar_system_db.endpoint
 }
