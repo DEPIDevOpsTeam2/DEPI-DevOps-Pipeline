@@ -1,3 +1,18 @@
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
+
+variable "aws_instance_type" {
+  description = "AWS ec2 type"
+  type        = string
+}
+
+variable "aws_ec2_ami" {
+  description = "AWS ec2 ami"
+  type        = string
+}
+
 variable "aws_access_key" {
   description = "AWS access key"
   type        = string
@@ -6,6 +21,12 @@ variable "aws_access_key" {
 
 variable "aws_secret_key" {
   description = "AWS secret key"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_name" {
+  description = "The port no."
   type        = string
   sensitive   = true
 }

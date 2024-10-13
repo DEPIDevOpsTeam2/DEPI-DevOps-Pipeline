@@ -1,0 +1,99 @@
+[{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d047"
+  },
+  "id": 4,
+  "name": "Mars",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/mars.png",
+  "velocity": "24",
+  "distance": "227",
+  "description": "Mars is the fourth planet from the Sun and is the second smallest planet in the solar system. Named after the Roman god of war, Mars is also often described as the “Red Planet” due to its reddish appearance. Mars is a terrestrial planet with a thin atmosphere composed primarily of carbon dioxide. Mars has two known moons, Phobos and Deimos (fear and dread, after attendants of Ares, the Greek god of war, equivalent to the Roman Mars). Searches for more satellites have been unsuccessful, putting the maximum radius of any other satellites at 90 m (100 yd)."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d049"
+  },
+  "id": 6,
+  "name": "Saturn",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/saturn.png",
+  "velocity": "9",
+  "distance": "1426",
+  "description": "Saturn is the sixth planet from the Sun and the most distant that can be seen with the naked eye. Saturn is the second largest planet and is best known for its fabulous ring system that was first observed in 1610 by the astronomer Galileo Galilei. Like Jupiter, Saturn is a gas giant and is composed of similar gasses including hydrogen, helium and methane. Saturn has 146 moons with known orbits; 66 of them have received permanent designations, and 63 have been named. Most of them are quite small. Seven moons are large enough to be in hydrostatic equilibrium, including Titan, the second largest moon in the Solar System. Including these large moons, 24 of Saturn's moons are regular, and traditionally named after Titans or other figures associated with the mythological Saturn. The remaining 122 are irregular, and classified by their orbital characteristics into Inuit, Norse, and Gallic groups, and their names are chosen from the corresponding mythologies the groups are named after. The rings of Saturn are made up of icy objects ranging in size from one centimetre to hundreds of metres, each of which is on its own orbit about the planet."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d046"
+  },
+  "id": 3,
+  "name": "Earth",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/earth.png",
+  "velocity": "29",
+  "distance": "149",
+  "description": "Earth is the third planet from the Sun and is the largest of the terrestrial planets. The Earth is the only planet in our solar system not to be named after a Greek or Roman deity. The Earth was formed approximately 4.54 billion years ago and is the only known planet to support life. Earth has one Moon, the largest moon of any rocky planet in the Solar System. Earth also has more than 20 known co-orbitals, including the asteroids 3753 Cruithne and 469219 Kamoʻoalewa, and the occasional temporary satellite, like 2020 CD3; however, since they do not permanently orbit Earth, they are not considered moons. "
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d045"
+  },
+  "id": 2,
+  "name": "Venus",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/venus.png",
+  "velocity": "35",
+  "distance": "108",
+  "description": "Venus is the second planet from the Sun and is the second brightest object in the night sky after the Moon. Named after the Roman goddess of love and beauty, Venus is the second largest terrestrial planet and is sometimes referred to as the Earth’s sister planet due the their similar size and mass. The surface of the planet is obscured by an opaque layer of clouds made up of sulphuric acid. Venus also has no moons, though reports of a moon around Venus have circulated since the 17th century."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d04a"
+  },
+  "id": 7,
+  "name": "Uranus",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/uranus.png",
+  "velocity": "6",
+  "distance": "2870",
+  "description": "Uranus is the seventh planet from the Sun. While being visible to the naked eye, it was not recognised as a planet due to its dimness and slow orbit. Uranus became the first planet discovered with the use of a telescope. Uranus is tipped over on its side with an axial tilt of 98 degrees. It is often described as “rolling around the Sun on its side.” Uranus has 27 known moons, five of which are massive enough to have achieved hydrostatic equilibrium. There are 13 moons that orbit within Uranus's ring system, and another nine outer irregular moons. Unlike most planetary moons, which are named from antiquity, all the moons of Uranus are named after characters from the works of Shakespeare and Alexander Pope's work The Rape of the Lock."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d044"
+  },
+  "id": 1,
+  "name": "Mercury",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/mercury.png",
+  "velocity": "47",
+  "distance": "58",
+  "description": "Mercury is the closest planet to the Sun and due to its proximity it is not easily seen except during twilight. For every two orbits of the Sun, Mercury completes three rotations about its axis and up until 1965 it was thought that the same side of Mercury constantly faced the Sun. Thirteen times a century Mercury can be observed from the Earth passing across the face of the Sun in an event called a transit, the last one occured on the 9th May 2016. Mercury, the smallest and innermost planet, has no moons, or at least none that can be detected to a diameter of 1.6 km (1.0 mi). For a very short time in 1974, Mercury was thought to have a moon."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d04b"
+  },
+  "id": 8,
+  "name": "Neptune",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/neptune.png",
+  "velocity": "5",
+  "distance": "4498",
+  "description": "Neptune is the eighth planet from the Sun making it the most distant in the solar system. This gas giant planet may have formed much closer to the Sun in early solar system history before migrating to its present id. Neptune has 14 known moons; the largest, Triton, accounts for more than 99.5 percent of all the mass orbiting the planet. Triton is large enough to have achieved hydrostatic equilibrium, but, uniquely for a large moon, has a retrograde orbit, suggesting it was a dwarf planet that was captured. Neptune also has seven known inner regular satellites, and six outer irregular satellites."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d04c"
+  },
+  "id": 0,
+  "name": "Sun",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/sun.png",
+  "velocity": "220",
+  "distance": "0",
+  "description": "The Sun (or Sol), is the star at the centre of our solar system and is responsible for the Earth’s climate and weather. The Sun is an almost perfect sphere with a difference of just 10km in diameter between the poles and the equator. The average radius of the Sun is 695,508 km (109.2 x that of the Earth) of which 20–25% is the core."
+},
+{
+  "_id": {
+    "$oid": "64de122465ba6ca132e2d048"
+  },
+  "id": 5,
+  "name": "Jupiter",
+  "image": "https://gitlab.com/sidd-harth/solar-system/-/raw/main/images/jupiter.png",
+  "velocity": "13",
+  "distance": "778",
+  "description": "The planet Jupiter is the fifth planet out from the Sun, and is two and a half times more massive than all the other planets in the solar system combined. It is made primarily of gases and is therefore known as a “gas giant”. Jupiter has 95 moons with known orbits; 72 of them have received permanent designations, and 57 have been named. Its eight regular moons are grouped into the planet-sized Galilean moons and the far smaller Amalthea group. They are named after lovers of Zeus, the Greek equivalent of Jupiter. Among them is Ganymede, the largest and most massive moon in the Solar System. Its 87 known irregular moons are organized into two categories: prograde and retrograde. The prograde satellites consist of the Himalia group and three others in groups of one. The retrograde moons are grouped into the Carme, Ananke and Pasiphae groups."
+}]
