@@ -65,7 +65,7 @@ pipeline {
                     
                     if [ -n "$IMAGE_EXISTS" ]; then
                         echo "Docker image exists. Deleting existing image..."
-                        docker rmi $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
+                        docker rmi -f $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
                     else
                         echo "Docker image does not exist. Proceeding to build a new image..."
                     fi
