@@ -41,6 +41,7 @@ pipeline {
             steps {
                 script{
                 sh ' export MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData" '
+                sh 'echo $MONGO_URI'
                 sh 'printenv'
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
                 
