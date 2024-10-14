@@ -126,6 +126,13 @@ resource "aws_security_group" "app_sg" {
   vpc_id = aws_vpc.solar_system_vpc.id
 
   ingress {
+    from_port   = 3000 # HTTP port for your app
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port   = 80 # HTTP port for your app
     to_port     = 80
     protocol    = "tcp"
