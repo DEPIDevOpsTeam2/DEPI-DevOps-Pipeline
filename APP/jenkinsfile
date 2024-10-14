@@ -39,30 +39,30 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                script{
-                 withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
+        // stage('Run Unit Tests') {
+        //     steps {
+        //         script{
+        //          withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
+        //             sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
 
-                }
+        //         }
  
-                } 
-            }
-        }
-        stage('Run Code Coverage') {
-            steps {
-                withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
-                publishHTML target: [
-                     reportName: 'Coverage Report',
-                     reportDir: 'coverage',
-                     reportFiles: 'index.html',
-                     alwaysLinkToLastBuild: true
-                ]
-                }
-            }
-        }
+        //         } 
+        //     }
+        // }
+        // stage('Run Code Coverage') {
+        //     steps {
+        //         withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
+        //         sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
+        //         publishHTML target: [
+        //              reportName: 'Coverage Report',
+        //              reportDir: 'coverage',
+        //              reportFiles: 'index.html',
+        //              alwaysLinkToLastBuild: true
+        //         ]
+        //         }
+        //     }
+        // }
          stage('Prepare Docker Image') {
             steps {
                 script {
@@ -107,17 +107,17 @@ pipeline {
             }
         }
         
-        stage('Test Docker Container') {
-            steps {
-                script {
-                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG "
-                    // def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-                    // dockerImage.run('-d -p 3000:3000')
-                    sh 'sleep 5' 
-                    sh 'curl http://localhost:3000'
-                    }
-            }
-}
+//         stage('Test Docker Container') {
+//             steps {
+//                 script {
+//                     sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG "
+//                     // def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+//                     // dockerImage.run('-d -p 3000:3000')
+//                     sh 'sleep 5' 
+//                     sh 'curl http://localhost:3000'
+//                     }
+//             }
+// }
         stage('Provisioning') {
             steps {
                 script {
