@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Checkout Code') {
             steps {
-                 git credentialsId: 'github_push',git branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
+                git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
             }
         }
 
