@@ -1,0 +1,47 @@
+pipeline{
+    agent any
+    tools{
+        nodejs "node"
+    }
+    environment{
+        DOCKER_CREDS = credentials('docker-cred')
+        DOCKER_IMAGE = "bondok26/depi-ci:v1"
+    }
+    stages{
+        stage("build"){
+            when {
+                changeset "ahmed/**"
+            }
+            steps{
+                echo "========unit-test========"
+                sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed test"
+            }
+        }
+        stage("code-coverage"){
+            steps{
+                echo "========code-coverage========"
+                sh "npm --prefix /var/lib/jenkins/workspace/ahmed-pipeline/ahmed run coverage"
+            }
+        }
+        stage("dockerize"){
+            steps{
+                echo "========dockerize========"
+                sh "docker build -t $DOCKER_IMAGE /var/lib/jenkins/workspace/ahmed-pipeline/ahmed"
+            }
+        }
+        stage("docker-login"){
+            steps{
+                echo "========docker-login========"
+                sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
+
+            }
+        }
+        stage("docker-push"){
+            steps{
+                echo "========docker-push========"
+                sh "docker push $DOCKER_IMAGE"
+            }
+        }
+    }
+            
+}
