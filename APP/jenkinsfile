@@ -9,6 +9,7 @@ pipeline {
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
+
        
     }
 //add stages to check ansible and terraform and docker if not install it 
@@ -38,9 +39,10 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                
+                script{
+                def MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData"
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
-                
+                } 
             }
         }
         stage('Run Code Coverage') {
