@@ -42,7 +42,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 
-                sh "npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test"
+                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
                 
             }
         }
