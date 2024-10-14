@@ -34,9 +34,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm cache clean --force'
+                
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP install'
-                sh 'npm install mocha chai chai-as-promised mocha-junit-reporter'
             }
         }
 
