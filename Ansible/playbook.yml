@@ -17,6 +17,7 @@
     aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
     aws_region: "{{ lookup('env', 'AWS_REGION') }}"
     venv_path: /opt/myenv # Path to the virtual environment
+    docker_path: "/usr/app/"
 
   tasks:
     - name: Update APT package cache
@@ -63,13 +64,13 @@
         ports:
           - 3000:3000
         volumes:
-          - "{{ download_path }}{{ app_name }}:/usr/app"
+          - "{{ download_path }}{{ app_name }}:{{ docker_path }}"
         env:
           MONGO_URI: "{{ mongo_uri }}"
-          PEM_FILE: "/usr/app/{{ mongo_access_key }}"
+          PEM_FILE: "{{ docker_path }}{{ mongo_access_key }}"
           MONGO_DB: "{{ mongo_db }}"
           MONGO_COLLECTION: "{{ mongo_collection }}"
-          MONGO_FILE: "/usr/app/{{ mongo_db_key }}"
+          MONGO_FILE: "{{ docker_path }}{{ mongo_db_key }}"
 
     - name: Ensure Python 3 is installed
       apt:
