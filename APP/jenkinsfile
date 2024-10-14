@@ -50,7 +50,7 @@ pipeline {
         }
         stage('Run Code Coverage') {
             steps {
-                
+                withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
                 publishHTML target: [
                      reportName: 'Coverage Report',
@@ -58,6 +58,7 @@ pipeline {
                      reportFiles: 'index.html',
                      alwaysLinkToLastBuild: true
                 ]
+                }
             }
         }
          stage('Prepare Docker Image') {
