@@ -9,6 +9,7 @@ pipeline {
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
+        
 
        
     }
@@ -40,11 +41,10 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script{
-                sh ' export MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData" '
-                sh 'echo $MONGO_URI'
-                sh 'printenv'
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
-                
+                 withEnv(["MONGO_URI=mongodb+srv://supercluster.d83jj.mongodb.net/superData"]){
+                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
+                }
+ 
                 } 
             }
         }
