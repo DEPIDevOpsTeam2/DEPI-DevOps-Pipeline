@@ -101,25 +101,24 @@ pipeline {
         stage('Test Docker Container') {
             steps {
                 script {
-            def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-            dockerImage.run('-d -p 3000:3000')
-            sh 'sleep 5' 
-            sh 'curl http://localhost:3000'
-        }
-    }
+                    def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+                    dockerImage.run('-d -p 3000:3000')
+                    sh 'sleep 5' 
+                    sh 'curl http://localhost:3000'
+                    }
+            }
 }
         stage('Provisioning') {
             steps {
-            script {
-            cd /Terraform
-            sh 'terraform init'
-
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
-            sh 'terraform apply -auto-approve -var "access_key=$AWS_ACCESS_KEY_ID" -var "secret_key=$AWS_SECRET_ACCESS_KEY" -var "region=AWS_REGION" '}
-            env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
+                script {
+                    cd /Terraform
+                    sh 'terraform init'
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
+                    sh 'terraform apply -auto-approve -var "access_key=$AWS_ACCESS_KEY_ID" -var "secret_key=$AWS_SECRET_ACCESS_KEY" -var "region=AWS_REGION" '}
+                    env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
             
-      }
-    }
+                    }
+                }
 }
         stage('ssh') {
             steps {
@@ -146,33 +145,34 @@ pipeline {
 
         stage('Configuration') {
             steps {
-            script {
+             script {
 
-            cd /Ansible
-            def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-            def host_ip = terraformOutputJson.host_ip.value
-            def mongo_uri = terraformOutputJson.mongo_uri.value
-            def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
-            def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
-            def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
-            def host_user = terraformOutputJson.host_user.value
-            def host_become_pass=terraformOutputJson.host_become_pass.value
+                cd /Ansible
+                def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
+                def host_ip = terraformOutputJson.host_ip.value
+                def mongo_uri = terraformOutputJson.mongo_uri.value
+                def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
+                def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
+                def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
+                def host_user = terraformOutputJson.host_user.value
+                def host_become_pass=terraformOutputJson.host_become_pass.value
             
-           sh """
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i inventory.yml \
-            --extra-vars 'mongo_uri=${mongo_uri} \
+                sh """
+                    export ANSIBLE_HOST_KEY_CHECKING=False
+                    ansible-playbook -i inventory.yml \
+                    --extra-vars 'mongo_uri=${mongo_uri} \
                           s3_bucket_name=${s3_bucket_name} \
                           s3_mongo_access_key=${s3_mongo_access_key} \
                           host_ip=${host_ip}\
                           host_user=${host_user}\
                           host_become_pass=${host_become_pass}\
                           s3_mongo_db_key=${s3_mongo_db_key}' \
-            playbook.yml   
+                    playbook.yml   
                         """
                     }
+                }
 }
-}
+
  }
            
     post{
