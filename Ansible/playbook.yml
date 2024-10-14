@@ -1,80 +1,171 @@
 ---
-- name: Provision the EC2 instance
-  hosts: local
+- name: Provision EC2 Instance
+  hosts: all
   become: true
 
+  vars:
+    app_name: "{{ lookup('env', 'APP_NAME') }}"
+    app_img: "{{ lookup('env', 'APP_IMG') }}"
+    mongo_uri: "{{ lookup('env', 'MONGO_URI') }}"
+    mongo_db: "{{ lookup('env', 'MONGO_DB') }}"
+    mongo_collection: "{{ lookup('env', 'MONGO_COLLECTION') }}"
+    bucket_name: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
+    mongo_access_key: "{{ lookup('env', 'S3_MONGO_ACCESS_KEY') }}" # The S3 object key
+    mongo_db_key: "{{ lookup('env', 'S3_MONGO_DB_KEY') }}" # The S3 object key
+    download_path: /usr/local # Local path to save the object
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+    venv_path: /opt/myenv # Path to the virtual environment
+    docker_path: /usr/app
+
   tasks:
-    - name: Check if Docker is already installed
-      shell: |
-        if ! command -v docker &> /dev/null; then
-            echo "not_installed"
-        else
-            echo "installed"
-        fi
-      register: docker_installed
-      changed_when: false # We don't want to mark this task as changed
-
-    - name: Install prerequisite packages (for Ubuntu)
+    # - name: show sensetive
+    #   debug:
+    #     msg: 
+    #       - "mongo_uri: {{ mongo_uri }}"
+    #       - "app_img: {{ app_img }}"
+    - name: Update APT package cache
       apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-        state: present
         update_cache: yes
-      when:
-        - docker_installed.stdout == "not_installed"
 
-    - name: Add Docker's official GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-      when:
-        - docker_installed.stdout == "not_installed"
+    - name: Ensure target directory exists
+      file:
+        path: "{{ download_path }}/{{ app_name }}"
+        state: directory
+        mode: "0755"
 
-    - name: Set up the Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-        state: present
-      when:
-        - docker_installed.stdout == "not_installed"
+    - name: Python & AWS
+      block:
+          - name: Ensure Python 3 is installed
+            apt:
+              name: python3
+              state: present
+              update_cache: yes
 
-    - name: Install Docker
-      apt:
-        name: docker-ce
-        state: present
-        update_cache: yes
-      when:
-        - docker_installed.stdout == "not_installed"
+          - name: Ensure pip is installed
+            apt:
+              name: python3-pip
+              state: present
 
-    - name: Ensure Docker service is started
-      service:
-        name: docker
-        state: started
-        enabled: yes
+          - name: Ensure python3-venv is installed
+            apt:
+              name: python3-venv
+              state: present
 
-    - name: Get the value of an environment variable
-      set_fact:
-        app_img: "{{ lookup('env', 'APP_IMG') }}"
+          - name: Create a Python virtual environment
+            command: python3 -m venv {{ venv_path }}
+            args:
+              creates: "{{ venv_path }}"
 
-    - name: Display env variable
-      debug:
-        msg: "app image is: {{ app_img }}"
+          - name: Install pip packages in the virtual environment
+            command: "{{ venv_path }}/bin/pip install boto3 packaging requests"
 
-    - name: Gather facts about Docker images
-      docker_image_info:
+          - name: Set the Python interpreter to the virtual environment
+            set_fact:
+              ansible_python_interpreter: "{{ venv_path }}/bin/python"
+            
+          - name: Download mongo access PEM file from S3
+            amazon.aws.s3_object:
+              bucket: "{{ bucket_name }}"
+              object: "{{ mongo_access_key }}"
+              dest: "{{ download_path }}/{{ app_name }}/{{ mongo_access_key }}"
+              mode: get
+              aws_access_key: "{{ aws_access_key }}"
+              aws_secret_key: "{{ aws_secret_key }}"
+              region: "{{ aws_region }}" # Optional: specify if needed
+            register: s3_pem_download
 
-    - name: Check if the specified Docker image exists
-      set_fact:
-        container_exists: "{{ item }}"
-      with_items: "{{ docker_images.images }}"
-      when: item.repo_tags is defined and item.repo_tags | select('search', app_img) | list | length > 0
-      register: checked_images
+          # - name: Display pem download result
+          #   debug:
+          #     var: s3_pem_download
+          - name: Download mongo data file from S3
+            amazon.aws.s3_object:
+              bucket: "{{ bucket_name }}"
+              object: "{{ mongo_db_key }}"
+              dest: "{{ download_path }}/{{ app_name }}/{{ mongo_db_key }}"
+              mode: get
+              aws_access_key: "{{ aws_access_key }}"
+              aws_secret_key: "{{ aws_secret_key }}"
+              region: "{{ aws_region }}" # Optional: specify if needed
+            register: s3_mongo_db_download
 
-    - name: Create Docker container if it does not exist
-      docker_container:
-        name: solar-app
-        image: "{{ app_img }}"
-        state: started
-      when: checked_images is not defined or checked_images | selectattr('container_exists', 'defined') | list | length == 0
+    - name: Docker
+      block:
+        - name: Check if Docker is installed
+          command: docker --version
+          register: docker_installed
+          ignore_errors: true
+
+        - name: Install Docker on Debian/Ubuntu
+          apt:
+            name: docker.io
+            state: present
+          when: docker_installed.rc != 0
+          tags: docker
+
+        - name: Start Docker service
+          service:
+            name: docker
+            state: started
+            enabled: yes
+          when: docker_installed.rc != 0
+          tags: docker
+          register: docker_service_started
+
+        - name: Check if the Docker container exists
+          command: docker ps -q -f name={{ app_name }}
+          register: existing_container_id
+          ignore_errors: yes
+
+        - name: Stop the existing container if it exists
+          docker_container:
+            name: "{{ app_name }}"
+            state: stopped
+          when: existing_container_id.stdout != ""
+
+        - name: Remove the existing container if it exists
+          docker_container:
+            name: "{{ app_name }}"
+            state: absent
+          when: existing_container_id.stdout != ""
+        # - name: Debug docker_service_started
+        #   debug:
+        #     var: docker_service_started
+
+        - name: Create Docker container if it does not exist
+          docker_container:
+            name: "{{ app_name }}"
+            image: "{{ app_img }}" # img:tag
+            state: started
+            recreate: true
+            restart_policy: unless-stopped
+            ports:
+              - "3000:3000"
+            # volumes:
+            #   - /usr/data:/usr/app/data  #docker_path = /usr/app/ => use static to avoid container restart issue
+            env:
+              MONGO_URI: "{{ mongo_uri }}"
+              S3_MONGO_ACCESS_KEY: "{{ docker_path }}/{{ mongo_access_key }}"
+              MONGO_DB: "{{ mongo_db }}"
+              MONGO_COLLECTION: "{{ mongo_collection }}"
+              S3_MONGO_DB_KEY: "{{ docker_path }}/{{ mongo_db_key }}"
+          register: container_status
+
+        - name: Copy a file into the container with owner, group, and mode set
+          community.docker.docker_container_copy_into:
+            container: "{{ app_name }}"
+            path: "{{ download_path }}/{{ app_name }}/{{ mongo_access_key }}"
+            container_path: "{{ docker_path }}/{{ mongo_access_key }}"
+            owner_id: 0  # root
+            group_id: 0  # root
+            mode: 0755  # readable and executable by all users, writable by root
+
+        - name: Copy a file into the container with owner, group, and mode set
+          community.docker.docker_container_copy_into:
+            container: "{{ app_name }}"
+            path: "{{ download_path }}/{{ app_name }}/{{ mongo_db_key }}"
+            container_path: "{{ docker_path }}/{{ mongo_db_key }}"
+            owner_id: 0  # root
+            group_id: 0  # root
+            mode: 0755  # readable and executable by all users, writable by root
