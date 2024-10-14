@@ -167,8 +167,9 @@ resource "aws_instance" "solar_system_app" {
     Name = "SolarSystemApp"
   }
 
-  # User data script to install and start your application
+  # User data script to install and start application
   user_data = <<-EOF
               #!/bin/bash
+              echo "root:${var.ec2_root_password}" | chpasswd
               EOF
 }

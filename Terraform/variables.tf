@@ -51,3 +51,8 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "ec2_root_password" {
+  description = "The password for ec2 root"
+  type        = string
+  sensitive   = true
+}

@@ -8,3 +8,4 @@ ssh_public_key    = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhRAUzgLxijVnLByGONPEg
 db_name           = "solar-system-db"
 db_username       = "db_admin"
 db_password       = "db_12345"
+ec2_root_password = "asd"
