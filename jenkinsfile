@@ -24,11 +24,11 @@ pipeline {
 
             }
         }
-        stage('Checkout Code') {
-            steps {
-                git branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
-            }
-        }
+        // stage('Checkout Code') {
+        //     steps {
+        //         git branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
+        //     }
+        // }
 
         stage('Install Dependencies') {
             steps {
