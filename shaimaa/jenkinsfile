@@ -97,10 +97,10 @@ pipeline {
                 app.push()
             }
         }
-        }
+        
         stage('Test Docker Container') {
             steps {
-        script {
+                script {
             def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
             dockerImage.run('-d -p 3000:3000')
             sh 'sleep 5' 
@@ -110,7 +110,7 @@ pipeline {
 }
         stage('Provisioning') {
             steps {
-        script {
+            script {
             cd /Terraform
             sh 'terraform init'
 
