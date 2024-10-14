@@ -146,7 +146,7 @@ pipeline {
 
         stage('Configuration') {
             steps {
-        script {
+            script {
 
             cd /Ansible
             def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
@@ -173,6 +173,7 @@ pipeline {
                     }
 }
 }
+ }
            
     post{
 
@@ -199,4 +200,4 @@ pipeline {
         }
     }
 
-}
+
