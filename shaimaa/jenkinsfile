@@ -114,7 +114,7 @@ pipeline {
                     cd /Terraform
                     sh 'terraform init'
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
-                    sh 'terraform apply -auto-approve -var "access_key=$AWS_ACCESS_KEY_ID" -var "secret_key=$AWS_SECRET_ACCESS_KEY" -var "region=AWS_REGION" '}
+                    sh 'terraform apply -auto-approve -var "access_key=${AWS_ACCESS_KEY_ID}" -var "secret_key=${AWS_SECRET_ACCESS_KEY}" -var "region=${AWS_REGION}" '}
                     env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
             
                     }
@@ -126,11 +126,11 @@ pipeline {
                 sh ''' 
                 ssh_prv= "/home/$(whoami)/.ssh/id_aws_ec2"
                 ssh_pub="/home/$(whoami)/.ssh/id_aws_ec2.pub"
-                if [-e "$ssh_prv" ];then
+                if [ -e "$ssh_prv" ];then
                 else
                 touch /home/$(whoami)/.ssh/id_aws_ec2 //any used...
                 fi
-                if [-e "$ssh_pub" ];then
+                if [ -e "$ssh_pub" ];then
                 else
                 touch /home/$(whoami)/.ssh/id_aws_ec2.pub
                 fi
