@@ -92,9 +92,10 @@ pipeline {
         }
         stage('Push Docker Image') {
             steps {
-
+              script{
                 def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
                 app.push()
+            }
             }
         }
         
