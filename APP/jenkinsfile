@@ -123,10 +123,11 @@ pipeline {
                 script {
                     cd ../Terraform
                     sh 'terraform init'
-                     withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'AWS_CREDS'
-                            ]]) {
+                    withCredentials([[
+                        credentialsId: 'AWS_CREDS',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]]) {
                         sh '''
                          terraform apply -auto-approve \
                          -var "access_key=$AWS_ACCESS_KEY_ID" \
