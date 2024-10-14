@@ -32,21 +32,21 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP install'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
                 
-                sh 'npm test'
+                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
                 
             }
         }
         stage('Run Code Coverage') {
             steps {
                 
-                sh 'npm run  coverage'
+                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
                 publishHTML target: [
                      reportName: 'Coverage Report',
                      reportDir: 'coverage',
