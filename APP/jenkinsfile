@@ -34,6 +34,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                sh 'npm cache clean --force'
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP install'
             }
         }
@@ -42,7 +43,8 @@ pipeline {
             steps {
                 script{
                  withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
+                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
+
                 }
  
                 } 
