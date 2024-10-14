@@ -123,10 +123,18 @@ pipeline {
                 script {
                     cd ../Terraform
                     sh 'terraform init'
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
-                    sh 'terraform apply -auto-approve -var "access_key=${AWS_ACCESS_KEY_ID}" -var "secret_key=${AWS_SECRET_ACCESS_KEY}" -var "region=${AWS_REGION}" '}
-                    env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
-            
+                     withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'AWS_CREDS'
+                            ]]) {
+                        sh '''
+                         terraform apply -auto-approve \
+                         -var "access_key=$AWS_ACCESS_KEY_ID" \
+                         -var "secret_key=$AWS_SECRET_ACCESS_KEY" \
+                         -var "region=$AWS_REGION"
+                         '''
+}
+
                     }
                 }
 }
