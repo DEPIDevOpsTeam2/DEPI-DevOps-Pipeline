@@ -77,7 +77,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    cd $WORKSPACE
+                    cd $WORKSPACE/APP
                     docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .
                     '''
                 }
