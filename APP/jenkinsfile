@@ -139,28 +139,32 @@ pipeline {
                     }
                 }
 }
-        stage('ssh') {
-            steps {
-               script {
-                sh ''' 
-                ssh_prv= "/home/$(whoami)/.ssh/id_aws_ec2"
-                ssh_pub="/home/$(whoami)/.ssh/id_aws_ec2.pub"
-                if [ -e "$ssh_prv" ];then
-                else
-                touch /home/$(whoami)/.ssh/id_aws_ec2 //any used...
-                fi
-                if [ -e "$ssh_pub" ];then
-                else
-                touch /home/$(whoami)/.ssh/id_aws_ec2.pub
-                fi
-                echo $SSH_KEY_USR > /home/$(whoami)/.ssh/id_aws_ec2.pub
-                echo $SSH_KEY_PSW > /home/$(whoami)/.ssh/id_aws_ec2
-                '''
-               }
-            
-            
-            }
+ stage('ssh') {
+    steps {
+        script {
+            sh ''' 
+            ssh_prv="/home/$$(whoami)/.ssh/id_aws_ec2"
+            ssh_pub="/home/$$(whoami)/.ssh/id_aws_ec2.pub"
+
+            if [ -e "$$ssh_prv" ]; then
+                echo "Private key exists."
+            else
+                touch /home/$$(whoami)/.ssh/id_aws_ec2
+            fi
+
+            if [ -e "$$ssh_pub" ]; then
+                echo "Public key exists."
+            else
+                touch /home/$$(whoami)/.ssh/id_aws_ec2.pub
+            fi
+
+            echo $$SSH_KEY_USR > /home/$$(whoami)/.ssh/id_aws_ec2.pub
+            echo $$SSH_KEY_PSW > /home/$$(whoami)/.ssh/id_aws_ec2
+            '''
+        }
+    }
 }
+
 
         stage('Configuration') {
             steps {
