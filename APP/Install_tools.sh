@@ -1,4 +1,20 @@
 #!/bin/bash
+#add Environment varibles
+export S3_MONGO_ACCESS_KEY=$(terraform output -raw  s3_mongo_access_key)
+export S3_MONGO_DB_KEY=$(terraform output -raw s3_mongo_db_key)
+export S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)
+export MONGO_URI=$(terraform output -raw mongo_uri)
+export HOST_IP=$(terraform output -raw host_ip)
+export HOST_USER=$(terraform output -raw host_user)
+export HOST_BECOME_PASS=$(terraform output -raw host_become_pass)
+export APP_NAME="solar-app"
+export APP_IMG="m2a2/solar-system:a5fb10e8ce9f6e433d1ff0e4da058c162d69abd8"
+export MONGO_DB="superData"
+export MONGO_COLLECTION="planets"
+export AWS_ACCESS_KEY_ID="AKIA4HWJUL3TXDCM54KR"
+export AWS_SECRET_ACCESS_KEY="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"
+export AWS_REGION="us-east-2"
+export HOST_SSH_PRV_KEY="~/.ssh/id_aws_ec2"
 
 # install Terraform
 sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
