@@ -40,7 +40,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script{
-                def MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData"
+                sh ' export MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData" '
                 sh 'printenv'
                 sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
                 
