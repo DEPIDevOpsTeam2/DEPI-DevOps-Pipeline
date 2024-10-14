@@ -16,7 +16,7 @@ const pemFile = process.env.S3_MONGO_ACCESS_KEY || "global-bundle.pem"; // Path 
 const collection = process.env.MONGO_COLLECTION || "planets";
 const data_file = process.env.S3_MONGO_DB_KEY || "superData.planets.json";
 const uri = process.env.MONGO_URI ||
-    `mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/${db_name}?tls=true&tlsCAFile=${pemFile}&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`;
+    'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/${db_name}?tls=true&tlsCAFile=${pemFile}&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
 
 
 // Planet schema
