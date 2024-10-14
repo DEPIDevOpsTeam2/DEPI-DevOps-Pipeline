@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Checkout Code') {
             steps {
-                git branch: 'feature/exploring-workflow', url: 'https://github.com/ShimaaELsaadi/solar_system'
+                git branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
             }
         }
 
