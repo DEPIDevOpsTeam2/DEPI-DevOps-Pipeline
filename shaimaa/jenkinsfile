@@ -3,14 +3,15 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'shaimaamelsaadi/solar_system'
-        DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
+        DOCKER_CREDS = credentials('dockerhub-credentials')
         DOCKER_IMAGE_TAG = 'latest'
         EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
-       // AWS_CREDENTIALS = credentials('aws-credentials-id')
-        // SSH_KEY = credentials('ssh-key-id')
-        //DB_CREDENTIALS = credentials('db-credentials-id')
+        APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
+        SSH_KEY=credentials('ssh_prv')
+        AWS_REGION="us-east-2"
+       
     }
-
+//add stages to check ansible and terraform and docker if not install it 
     stages {
         stage('Cleanup') {
             steps {
@@ -58,8 +59,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    cd $WORKSPACE
-                    
+                    cd $WORKSPACE                   
                     # Check if the Docker image exists
                     IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG)
                     
@@ -83,14 +83,18 @@ pipeline {
                 }
             }
         }
+          stage("docker-login"){
+            steps{
+
+                sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
+
+            }
+        }
         stage('Push Docker Image') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                }
-                 def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-                 app.push()
+
+                def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+                app.push()
             }
         }
         }
@@ -103,6 +107,70 @@ pipeline {
             sh 'curl http://localhost:3000'
         }
     }
+}
+        stage('Provisioning') {
+            steps {
+        script {
+            cd /Terraform
+            sh 'terraform init'
+
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
+            sh 'terraform apply -auto-approve -var "access_key=$AWS_ACCESS_KEY_ID" -var "secret_key=$AWS_SECRET_ACCESS_KEY" -var "region=AWS_REGION" '}
+            env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
+            
+      }
+    }
+}
+        stage('ssh') {
+            steps {
+               script {
+                sh ''' 
+                ssh_prv= "/home/$(whoami)/.ssh/id_aws_ec2"
+                ssh_pub="/home/$(whoami)/.ssh/id_aws_ec2.pub"
+                if [-e "$ssh_prv" ];then
+                else
+                touch /home/$(whoami)/.ssh/id_aws_ec2 //any used...
+                fi
+                if [-e "$ssh_pub" ];then
+                else
+                touch /home/$(whoami)/.ssh/id_aws_ec2.pub
+                fi
+                echo $SSH_KEY_USR > /home/$(whoami)/.ssh/id_aws_ec2.pub
+                echo $SSH_KEY_PSW > /home/$(whoami)/.ssh/id_aws_ec2
+                '''
+               }
+            
+            
+            }
+}
+
+        stage('Configuration') {
+            steps {
+        script {
+
+            cd /Ansible
+            def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
+            def host_ip = terraformOutputJson.host_ip.value
+            def mongo_uri = terraformOutputJson.mongo_uri.value
+            def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
+            def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
+            def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
+            def host_user = terraformOutputJson.host_user.value
+            def host_become_pass=terraformOutputJson.host_become_pass.value
+            
+           sh """
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i inventory.yml \
+            --extra-vars 'mongo_uri=${mongo_uri} \
+                          s3_bucket_name=${s3_bucket_name} \
+                          s3_mongo_access_key=${s3_mongo_access_key} \
+                          host_ip=${host_ip}\
+                          host_user=${host_user}\
+                          host_become_pass=${host_become_pass}\
+                          s3_mongo_db_key=${s3_mongo_db_key}' \
+            playbook.yml   
+                        """
+                    }
 }
 }
            
