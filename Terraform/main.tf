@@ -10,7 +10,7 @@ resource "aws_s3_object" "my_json_file" {
   source = "superData.planets.json" # Path to JSON file
 }
 
-# Store .pem file, certificate required to authenticate to your cluster
+# Store .pem file, certificate required to authenticate to db cluster
 resource "aws_s3_object" "my_pem_file" {
   bucket = aws_s3_bucket.my_bucket.id
   key    = "global-bundle.pem"
@@ -75,7 +75,7 @@ resource "aws_route_table" "public_route_table" {
   }
 }
 
-# Associate Route Table with Public Subnet
+# Create Associate Route Table with Public Subnet
 resource "aws_route_table_association" "public_subnet_association" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_route_table.id
@@ -96,7 +96,7 @@ resource "aws_security_group" "docdb_sg" {
 
 resource "aws_docdb_subnet_group" "solar_system_subnet_group" {
   name       = "solar-system-subnet-group"
-  subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id] # Reference your valid private subnets
+  subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id] # Reference private subnets
 
   tags = {
     Name = "SolarSystemSubnetGroup"

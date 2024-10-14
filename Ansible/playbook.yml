@@ -1,5 +1,5 @@
 ---
-- name: Provision EC2 Instance
+- name: EC2 Instance Configration
   hosts: all
   become: true
 
@@ -20,11 +20,6 @@
     docker_path: /usr/app
 
   tasks:
-    # - name: show sensetive
-    #   debug:
-    #     msg: 
-    #       - "mongo_uri: {{ mongo_uri }}"
-    #       - "app_img: {{ app_img }}"
     - name: Update APT package cache
       apt:
         update_cache: yes
@@ -35,7 +30,7 @@
         state: directory
         mode: "0755"
 
-    - name: Python & AWS
+    - name: Prepare Python & AWS
       block:
           - name: Ensure Python 3 is installed
             apt:
@@ -90,7 +85,7 @@
               region: "{{ aws_region }}" # Optional: specify if needed
             register: s3_mongo_db_download
 
-    - name: Docker
+    - name: Prepare Docker
       block:
         - name: Check if Docker is installed
           command: docker --version
@@ -152,7 +147,7 @@
               S3_MONGO_DB_KEY: "{{ docker_path }}/{{ mongo_db_key }}"
           register: container_status
 
-        - name: Copy a file into the container with owner, group, and mode set
+        - name: Copy pem file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
             path: "{{ download_path }}/{{ app_name }}/{{ mongo_access_key }}"
@@ -161,7 +156,7 @@
             group_id: 0  # root
             mode: 0755  # readable and executable by all users, writable by root
 
-        - name: Copy a file into the container with owner, group, and mode set
+        - name: Copy db file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
             path: "{{ download_path }}/{{ app_name }}/{{ mongo_db_key }}"
