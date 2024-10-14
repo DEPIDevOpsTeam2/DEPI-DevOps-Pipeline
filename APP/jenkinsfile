@@ -42,14 +42,14 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test'
+                sh 'npm test'
                 
             }
         }
         stage('Run Code Coverage') {
             steps {
                 
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP run  coverage'
+                sh 'npm run  coverage'
                 publishHTML target: [
                      reportName: 'Coverage Report',
                      reportDir: 'coverage',
