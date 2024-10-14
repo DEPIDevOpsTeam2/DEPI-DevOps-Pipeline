@@ -121,7 +121,7 @@ pipeline {
         stage('Provisioning') {
             steps {
                 script {
-                    cd /Terraform
+                    cd ../Terraform
                     sh 'terraform init'
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDS']]) {
                     sh 'terraform apply -auto-approve -var "access_key=${AWS_ACCESS_KEY_ID}" -var "secret_key=${AWS_SECRET_ACCESS_KEY}" -var "region=${AWS_REGION}" '}
@@ -157,7 +157,7 @@ pipeline {
             steps {
              script {
 
-                cd /Ansible
+                cd ../Ansible
                 def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
                 def host_ip = terraformOutputJson.host_ip.value
                 def mongo_uri = terraformOutputJson.mongo_uri.value
