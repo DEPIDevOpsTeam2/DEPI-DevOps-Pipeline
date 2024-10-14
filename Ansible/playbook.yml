@@ -20,6 +20,11 @@
     docker_path: "/usr/app/"
 
   tasks:
+    # - name: show sensetive
+    #   debug:
+    #     msg: 
+    #       - "mongo_uri: {{ mongo_uri }}"
+    #       - "app_img: {{ app_img }}"
     - name: Update APT package cache
       apt:
         update_cache: yes
@@ -30,98 +35,125 @@
         state: directory
         mode: "0755"
 
-    - name: Check if Docker is installed
-      command: docker --version
-      register: docker_installed
-      ignore_errors: true
+    - name: Python & AWS
+      block:
+          - name: Ensure Python 3 is installed
+            apt:
+              name: python3
+              state: present
+              update_cache: yes
 
-    - name: Install Docker on Debian/Ubuntu
-      apt:
-        name: docker.io
-        state: present
-      when: docker_installed.rc != 0
-      tags: docker
+          - name: Ensure pip is installed
+            apt:
+              name: python3-pip
+              state: present
 
-    - name: Start Docker service
-      service:
-        name: docker
-        state: started
-        enabled: yes
-      when: docker_installed.rc != 0
-      tags: docker
-      register: docker_service_started
+          - name: Ensure python3-venv is installed
+            apt:
+              name: python3-venv
+              state: present
 
-    # - name: Debug docker_service_started
-    #   debug:
-    #     var: docker_service_started
+          - name: Create a Python virtual environment
+            command: python3 -m venv {{ venv_path }}
+            args:
+              creates: "{{ venv_path }}"
 
-    - name: Create Docker container if it does not exist
-      docker_container:
-        name: "{{ app_name }}"
-        image: "{{ app_img }}" # img:tag
-        state: started
-        restart_policy: unless-stopped
-        ports:
-          - 3000:3000
-        volumes:
-          - "{{ download_path }}{{ app_name }}:{{ docker_path }}"
-        env:
-          MONGO_URI: "{{ mongo_uri }}"
-          PEM_FILE: "{{ docker_path }}{{ mongo_access_key }}"
-          MONGO_DB: "{{ mongo_db }}"
-          MONGO_COLLECTION: "{{ mongo_collection }}"
-          MONGO_FILE: "{{ docker_path }}{{ mongo_db_key }}"
+          - name: Install pip packages in the virtual environment
+            command: "{{ venv_path }}/bin/pip install boto3 packaging pymongo requests"
 
-    - name: Ensure Python 3 is installed
-      apt:
-        name: python3
-        state: present
-        update_cache: yes
+          - name: Set the Python interpreter to the virtual environment
+            set_fact:
+              ansible_python_interpreter: "{{ venv_path }}/bin/python"
+            
+          - name: Download mongo access PEM file from S3
+            amazon.aws.s3_object:
+              bucket: "{{ bucket_name }}"
+              object: "{{ mongo_access_key }}"
+              dest: "{{ download_path }}{{ app_name }}/{{ mongo_access_key }}"
+              mode: get
+              aws_access_key: "{{ aws_access_key }}"
+              aws_secret_key: "{{ aws_secret_key }}"
+              region: "{{ aws_region }}" # Optional: specify if needed
+            register: s3_pem_download
 
-    - name: Ensure pip is installed
-      apt:
-        name: python3-pip
-        state: present
+          # - name: Display pem download result
+          #   debug:
+          #     var: s3_pem_download
+          - name: Download mongo data file from S3
+            amazon.aws.s3_object:
+              bucket: "{{ bucket_name }}"
+              object: "{{ mongo_db_key }}"
+              dest: "{{ download_path }}{{ app_name }}/{{ mongo_db_key }}"
+              mode: get
+              aws_access_key: "{{ aws_access_key }}"
+              aws_secret_key: "{{ aws_secret_key }}"
+              region: "{{ aws_region }}" # Optional: specify if needed
+            register: s3_mongo_db_download
 
-    - name: Ensure python3-venv is installed
-      apt:
-        name: python3-venv
-        state: present
+    - name: Docker
+      block:
+        - name: Check if Docker is installed
+          command: docker --version
+          register: docker_installed
+          ignore_errors: true
 
-    - name: Create a Python virtual environment
-      command: python3 -m venv {{ venv_path }}
-      args:
-        creates: "{{ venv_path }}"
+        - name: Install Docker on Debian/Ubuntu
+          apt:
+            name: docker.io
+            state: present
+          when: docker_installed.rc != 0
+          tags: docker
 
-    - name: Install pip packages in the virtual environment
-      command: "{{ venv_path }}/bin/pip install boto3 packaging pymongo requests"
+        - name: Start Docker service
+          service:
+            name: docker
+            state: started
+            enabled: yes
+          when: docker_installed.rc != 0
+          tags: docker
+          register: docker_service_started
 
-    - name: Set the Python interpreter to the virtual environment
-      set_fact:
-        ansible_python_interpreter: "{{ venv_path }}/bin/python"
 
-    - name: Download mongo access PEM file from S3
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}"
-        object: "{{ mongo_access_key }}"
-        dest: "{{ download_path }}{{ app_name }}/{{ mongo_access_key }}"
-        mode: get
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        region: "{{ aws_region }}" # Optional: specify if needed
-      register: s3_pem_download
+        # - name: Debug container status
+        #   debug:
+        #     var: container_status
+            
+        
+        - name: Check if the Docker container exists
+          command: docker ps -q -f name={{ app_name }}
+          register: existing_container_id
+          ignore_errors: yes
 
-    # - name: Display pem download result
-    #   debug:
-    #     var: s3_pem_download
+        - name: Stop the existing container if it exists
+          docker_container:
+            name: "{{ app_name }}"
+            state: stopped
+          when: existing_container_id.stdout != ""
 
-    - name: Download mongo data file from S3
-      amazon.aws.s3_object:
-        bucket: "{{ bucket_name }}"
-        object: "{{ mongo_db_key }}"
-        dest: "{{ download_path }}{{ app_name }}/{{ mongo_db_key }}"
-        mode: get
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        region: "{{ aws_region }}" # Optional: specify if needed
-      register: s3_mongo_db_download
+        - name: Remove the existing container if it exists
+          docker_container:
+            name: "{{ app_name }}"
+            state: absent
+          when: existing_container_id.stdout != ""
+        # - name: Debug docker_service_started
+        #   debug:
+        #     var: docker_service_started
+
+        - name: Create Docker container if it does not exist
+          docker_container:
+            name: "{{ app_name }}"
+            image: "{{ app_img }}" # img:tag
+            state: started
+            recreate: true
+            restart_policy: unless-stopped
+            ports:
+              - "3000:3000"
+            volumes:
+              - /data  #docker_path = /usr/app/ => use static to avoid container restart issue
+            env:
+              MONGO_URI: "{{ mongo_uri }}"
+              S3_MONGO_ACCESS_KEY: "/usr/app/{{ mongo_access_key }}"
+              MONGO_DB: "{{ mongo_db }}"
+              MONGO_COLLECTION: "{{ mongo_collection }}"
+              S3_MONGO_DB_KEY: "/usr/app/{{ mongo_db_key }}"
+          register: container_status
