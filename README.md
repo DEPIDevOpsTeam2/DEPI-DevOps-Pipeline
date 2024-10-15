@@ -36,6 +36,22 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 
 ## 5- Pipeline Steps
   ## Jenkins:
+  # Stages:
+    - Clean up >> remove old artifacts from jenkins working directory /var/lib/jenkins/workspace
+    - Checkout code >> pull repo files from github
+    - Install Dependencies >> install nodejs
+    - Run Unit Tests
+    - Run Code Coverage
+    - Prepare Docker Image >> check if the image exists remove it
+    - Build Docker Image
+    - Docker-login >> login to dockerhub using pre-configured credintials
+    - Push Docker Image
+    - Test Docker Container >> pull the image and run it to check everything is running
+    - Provisioning >> using terrafrom to provision vpc, subnets, database, ec2 on aws
+    - Check Terraform Output >> check feedback of provisioning process
+    - Prepare params for ssh >> setup ssh keys used implicitly by ansible
+    - Configuration >> using ansible to configure the provisioned resources on aws
+    - Post action >> send email at failure
   
   ## Terraform:
     * Resources:
