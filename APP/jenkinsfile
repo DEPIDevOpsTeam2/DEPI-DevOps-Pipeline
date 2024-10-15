@@ -167,26 +167,18 @@ pipeline {
 
                         # Check for the private key, create if not exists
                         if [ -e "$ssh_prv" ]; then
-                            echo "Private key exists."
-                        else
-                            touch ${ssh_prv}
-                            
+                            rm ${ssh_prv}   
                         fi
 
                         # Check for the public key, create if not exists
                         if [ -e "$ssh_pub" ]; then
-                            echo "Public key exists."
-                        else
-                            touch ${ssh_pub}
-
+                            rm ${ssh_pub}
                         fi
                         
+                        cp ../ssh/id_aws_ec2  ${ssh_dir}
+                        cp ../ssh/id_aws_ec2.pub  ${ssh_dir}
                         chmod 600 ${ssh_prv}
-                        echo ${env.SSH_KEY_PSW}
-                        echo ${SSH_KEY_PSW} > ${ssh_prv}
-                        chmod 644 ${ssh_pub}
-                        echo ${env.SSH_KEY_USR}
-                        echo ${SSH_KEY_USR} > ${ssh_pub}
+                        chmod 644 ${ssh_pub} 
                         '''
         }
     }
