@@ -39,10 +39,6 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
   
   # Terraform:
     * Resources:
-      - Create S3 bucket contains 3 objects:
-          - JSON file: solar system database.
-          - pem file: certificate required to authenticate to db cluster.
-          - tfstate file: terraform state file.
       - Create VPC with the following:
           - Create public subnet for Ec2 instance.
           - Create 2 private subnets for DocumentDB cluster (2 subnets with 2 availability zones) and create subnet group contains private subnets.
