@@ -14,7 +14,8 @@ app.use(cors())
 const collection = process.env.MONGO_COLLECTION || "planets";
 const data_file = process.env.S3_MONGO_DB_KEY || "superData.planets.json";
 const uri = process.env.MONGO_URI ||
-    'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solar-system-db?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
+    'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solar-system-db?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
+
 
 
 // Planet schema
@@ -60,7 +61,9 @@ async function checkAndInsertData() {
 
 mongoose.connect(uri, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    tls: true,
+    tlsCAFile: path.join(__dirname, 'global-bundle.pem') // Adjust the path if needed
 }, function (err) {
     if (err) {
         console.log("error!! " + err);
