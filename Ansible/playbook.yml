@@ -13,6 +13,7 @@
     mongo_pem_file: global-bundle.pem
     mongo_db_file: superData.planets.json
     docker_path: /usr/app
+    venv_path: /opt/myenv
 
   tasks:
     - name: Check if the file exists
@@ -38,6 +39,38 @@
         src: files/{{ mongo_db_file }} # Path relative to playbook.yml
         dest: "{{ docker_path }}/{{ mongo_db_file }}" # Destination path on the remote host
       when: not file_stat.stat.exists
+
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Ensure Python 3 is installed
+      apt:
+        name: python3
+        state: present
+        update_cache: yes
+
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Ensure python3-venv is installed
+      apt:
+        name: python3-venv
+        state: present
+
+    - name: Create a Python virtual environment
+      command: python3 -m venv {{ venv_path }}
+      args:
+        creates: "{{ venv_path }}"
+
+    - name: Install pip packages in the virtual environment
+      command: "{{ venv_path }}/bin/pip install docker"
+
+    - name: Set the Python interpreter to the virtual environment
+      set_fact:
+        ansible_python_interpreter: "{{ venv_path }}/bin/python"
 
     - name: Prepare Docker
       block:
@@ -66,18 +99,6 @@
           command: docker ps -q -f name={{ app_name }}
           register: existing_container_id
           ignore_errors: true
-
-        - name: Stop the existing container if it exists
-          docker_container:
-            name: "{{ app_name }}"
-            state: stopped
-          when: existing_container_id.stdout != ""
-
-        - name: Remove the existing container if it exists
-          docker_container:
-            name: "{{ app_name }}"
-            state: absent
-          when: existing_container_id.stdout != ""
 
         - name: Create Docker container if it does not exist
           docker_container:
