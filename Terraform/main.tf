@@ -1,6 +1,45 @@
 # Define S3 bucket to store .json ,pem and tfstate files
 resource "aws_s3_bucket" "my_bucket" {
-  bucket = "my-json-pem-state-bucket"
+  bucket = "my-json-pem-state-bucket"  
+}
+
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.my_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_iam_policy" "s3_bucket_policy_permissions" {
+  name        = "S3BucketPolicyPermissions"
+  description = "Policy to allow PutBucketPolicy on specific S3 buckets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "s3:PutBucketPolicy"
+        Resource = "arn:aws:s3:::my-json-pem-state-bucket" # Replace with your bucket ARN
+      },
+      {
+        Effect = "Allow"
+        Action = "s3:GetBucketPolicy"
+        Resource = "arn:aws:s3:::my-json-pem-state-bucket" # To view the current policy
+      }
+    ]
+  })
+}
+
+resource "aws_iam_user" "example_user" {
+  name = "example_user"
+}
+
+resource "aws_iam_user_policy_attachment" "example_user_policy_attachment" {
+  user       = aws_iam_user.example_user.name
+  policy_arn = aws_iam_policy.s3_bucket_policy_permissions.arn
 }
 
 # Store .json file, solar system db
