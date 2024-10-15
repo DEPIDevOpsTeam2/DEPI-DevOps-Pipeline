@@ -19,6 +19,7 @@ pipeline {
         }
         stage('Prepare Jenkins Inputs') {
             steps {
+                sh 'echo $BUILD_NUMBER'
                 echo 'Preparing Jenkins inputs...'
             }
         }
