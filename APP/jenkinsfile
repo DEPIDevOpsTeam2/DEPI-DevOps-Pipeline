@@ -143,9 +143,8 @@ pipeline {
                 script {
                     sh '''
                     USER=$(whoami)
-                    home="home"
-                    ssh_prv= "/$home/${USER}/.ssh/id_aws_ec2"
-                    ssh_pub= "/$home/${USER}/.ssh/id_aws_ec2.pub"
+                    ssh_prv= '/home/${USER}/.ssh/id_aws_ec2'
+                    ssh_pub= '/home/${USER}/.ssh/id_aws_ec2.pub'
                     if [ -e "$ssh_prv" ]; then
                     echo "Private key exists."
                     else
@@ -154,10 +153,10 @@ pipeline {
                     if [ -e "$ssh_pub" ]; then
                     echo "Public key exists."
                     else
-                    touch /$home/${env.USER}/.ssh/id_aws_ec2.pub
+                    touch /home/${env.USER}/.ssh/id_aws_ec2.pub
                     fi
-                    echo $$SSH_KEY_USR > /$home/${USER}/.ssh/id_aws_ec2.pub
-                    echo $$SSH_KEY_PSW > /$home/${USER}/.ssh/id_aws_ec2
+                    echo $$SSH_KEY_USR > /home/${USER}/.ssh/id_aws_ec2.pub
+                    echo $$SSH_KEY_PSW > /home/${USER}/.ssh/id_aws_ec2
                     '''
                      }
                 }
