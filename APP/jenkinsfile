@@ -9,9 +9,8 @@ pipeline {
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
-       
     }
-//add stages to check ansible and terraform and docker if not install it 
+
     stages {
         stage('Cleanup') {
             steps {
@@ -21,7 +20,6 @@ pipeline {
         stage('Prepare Jenkins Inputs') {
             steps {
                 echo 'Preparing Jenkins inputs...'
-
             }
         }
         stage('Checkout Code') {
@@ -32,43 +30,41 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP install'
+                sh 'npm --prefix $WORKSPACE/APP install'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                script{
-                 withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
-
+                script {
+                    withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]) {
+                        sh 'npm --prefix $WORKSPACE/APP test --verbose'
+                    }
                 }
- 
-                } 
             }
         }
+
         stage('Run Code Coverage') {
             steps {
-                withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
-                publishHTML target: [
-                     reportName: 'Coverage Report',
-                     reportDir: 'coverage',
-                     reportFiles: 'index.html',
-                     alwaysLinkToLastBuild: true
-                ]
+                withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]) {
+                    sh 'npm --prefix $WORKSPACE/APP run coverage'
+                    publishHTML target: [
+                        reportName: 'Coverage Report',
+                        reportDir: 'coverage',
+                        reportFiles: 'index.html',
+                        alwaysLinkToLastBuild: true
+                    ]
                 }
             }
         }
+
         stage('Prepare Docker Image') {
             steps {
                 script {
                     sh '''
-                    cd $WORKSPACE                   
-                    # Check if the Docker image exists
+                    cd $WORKSPACE
                     IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG)
-                    
+
                     if [ -n "$IMAGE_EXISTS" ]; then
                         echo "Docker image exists. Deleting existing image..."
                         docker rmi -f $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
@@ -79,6 +75,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -89,133 +86,128 @@ pipeline {
                 }
             }
         }
-        stage("docker-login"){
-            steps{
 
+        stage('docker-login') {
+            steps {
                 sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
-
             }
         }
+
         stage('Push Docker Image') {
             steps {
-                script{
+                script {
                     def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
                     app.push()
-            }
+                }
             }
         }
-        
+
         stage('Test Docker Container') {
             steps {
                 script {
-                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG "
-                    // def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-                    // dockerImage.run('-d -p 3000:3000')
-                    sh 'sleep 5' 
+                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
+                    sh 'sleep 5'
                     sh 'curl http://localhost:3000'
-                    }
+                }
             }
-}
+        }
+
         stage('Provisioning') {
             steps {
                 script {
-                    cd ../Terraform
-                    sh 'terraform init'
-                    withCredentials([[
-                        credentialsId: 'AWS_CREDS',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    dir('../Terraform') {
+                        sh 'terraform init'
+                        withCredentials([[
+                            credentialsId: 'AWS_CREDS',
+                            usernameVariable: 'AWS_ACCESS_KEY_ID',
+                            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                         ]]) {
-                        sh '''
-                         terraform apply -auto-approve \
-                         -var "access_key=$AWS_ACCESS_KEY_ID" \
-                         -var "secret_key=$AWS_SECRET_ACCESS_KEY" \
-                         -var "region=${ AWS_REGION }"
-                         '''}
-
+                            sh '''
+                            terraform apply -auto-approve \
+                            -var "access_key=$AWS_ACCESS_KEY_ID" \
+                            -var "secret_key=$AWS_SECRET_ACCESS_KEY" \
+                            -var "region=${AWS_REGION}"
+                            '''
+                        }
                     }
                 }
-}
+            }
+        }
+
         stage('ssh') {
             steps {
                 script {
                     sh '''
                     USER=$(whoami)
-                    ssh_prv= '/home/${USER}/.ssh/id_aws_ec2'
-                    ssh_pub= '/home/${USER}/.ssh/id_aws_ec2.pub'
+                    ssh_prv="/home/${USER}/.ssh/id_aws_ec2"
+                    ssh_pub="/home/${USER}/.ssh/id_aws_ec2.pub"
                     if [ -e "$ssh_prv" ]; then
-                    echo "Private key exists."
+                        echo "Private key exists."
                     else
-                    touch /$home/${env.USER}/.ssh/id_aws_ec2
+                        touch /home/${USER}/.ssh/id_aws_ec2
                     fi
                     if [ -e "$ssh_pub" ]; then
-                    echo "Public key exists."
+                        echo "Public key exists."
                     else
-                    touch /home/${env.USER}/.ssh/id_aws_ec2.pub
+                        touch /home/${USER}/.ssh/id_aws_ec2.pub
                     fi
-                    echo $$SSH_KEY_USR > /home/${USER}/.ssh/id_aws_ec2.pub
-                    echo $$SSH_KEY_PSW > /home/${USER}/.ssh/id_aws_ec2
+                    echo $SSH_KEY_USR > /home/${USER}/.ssh/id_aws_ec2.pub
+                    echo $SSH_KEY_PSW > /home/${USER}/.ssh/id_aws_ec2
                     '''
-                     }
                 }
-}
-
+            }
+        }
 
         stage('Configuration') {
             steps {
-             script {
+                script {
+                    dir('../Ansible') {
+                        def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
+                        def host_ip = terraformOutputJson.host_ip.value
+                        def mongo_uri = terraformOutputJson.mongo_uri.value
+                        def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
+                        def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
+                        def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
+                        def host_user = terraformOutputJson.host_user.value
+                        def host_become_pass = terraformOutputJson.host_become_pass.value
 
-                cd ../Ansible
-                def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-                def host_ip = terraformOutputJson.host_ip.value
-                def mongo_uri = terraformOutputJson.mongo_uri.value
-                def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
-                def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
-                def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
-                def host_user = terraformOutputJson.host_user.value
-                def host_become_pass=terraformOutputJson.host_become_pass.value
-            
-                sh """
-                    export ANSIBLE_HOST_KEY_CHECKING=False
-                    ansible-playbook -i inventory.yml \
-                    --extra-vars 'mongo_uri=${mongo_uri} \
-                          s3_bucket_name=${s3_bucket_name} \
-                          s3_mongo_access_key=${s3_mongo_access_key} \
-                          host_ip=${host_ip}\
-                          host_user=${host_user}\
-                          host_become_pass=${host_become_pass}\
-                          s3_mongo_db_key=${s3_mongo_db_key}' \
-                    playbook.yml   
+                        sh """
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook -i inventory.yml \
+                        --extra-vars 'mongo_uri=${mongo_uri} \
+                        s3_bucket_name=${s3_bucket_name} \
+                        s3_mongo_access_key=${s3_mongo_access_key} \
+                        host_ip=${host_ip} \
+                        host_user=${host_user} \
+                        host_become_pass=${host_become_pass} \
+                        s3_mongo_db_key=${s3_mongo_db_key}' \
+                        playbook.yml
                         """
                     }
                 }
-}
+            }
+        }
+    }
 
- }
-           
-    post{
-
+    post {
         failure {
             mail to: "${EMAIL_RECIPIENTS}",
                 subject: "❌ Build Failed: ${JOB_NAME} - Build #${BUILD_NUMBER}",
                 body: """<p>Oops! The build has failed.</p>
                          <p><strong>Job:</strong> ${JOB_NAME}</p>
-                          <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
-                          <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
-                    mimeType: 'text/html'
-                
+                         <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
+                         <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
+                mimeType: 'text/html'
         }
 
         unstable {
             mail to: "${EMAIL_RECIPIENTS}",
                 subject: "⚠️ Build Unstable: ${JOB_NAME} - Build #${BUILD_NUMBER}",
                 body: """<p>The build is unstable.</p>
-                          <p><strong>Job:</strong> ${JOB_NAME}</p>
-                          <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
-                          <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
-                    mimeType: 'text/html'
-                
+                         <p><strong>Job:</strong> ${JOB_NAME}</p>
+                         <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
+                         <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
+                mimeType: 'text/html'
         }
     }
-
 }
