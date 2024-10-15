@@ -2,6 +2,7 @@
 - name: EC2 Instance Configration
   hosts: all
   become: true
+  gather_facts: false
 
   vars:
     app_name: "{{ lookup('env', 'APP_NAME') }}"
@@ -12,41 +13,8 @@
     mongo_pem_file: global-bundle.pem
     mongo_db_file: superData.planets.json
     docker_path: /usr/app
-    venv_path: /opt/myenv
 
   tasks:
-    - name: Update APT package cache
-      apt:
-        update_cache: yes
-
-    - name: Ensure Python 3 is installed
-      apt:
-        name: python3
-        state: present
-        update_cache: yes
-
-    - name: Ensure pip is installed
-      apt:
-        name: python3-pip
-        state: present
-
-    - name: Ensure python3-venv is installed
-      apt:
-        name: python3-venv
-        state: present
-
-    - name: Create a Python virtual environment
-      command: python3 -m venv {{ venv_path }}
-      args:
-        creates: "{{ venv_path }}"
-
-    - name: Install pip packages in the virtual environment
-      command: "{{ venv_path }}/bin/pip install boto3 packaging requests"
-
-    - name: Set the Python interpreter to the virtual environment
-      set_fact:
-        ansible_python_interpreter: "{{ venv_path }}/bin/python"
-
     - name: Check if the file exists
       stat:
         path: "{{ docker_path }}/{{ mongo_pem_file }}" # Specify the path to the file
@@ -59,13 +27,13 @@
         mode: "0755"
       when: not file_stat.stat.exists
 
-    - name: Copy sibling_file.txt to the remote host
+    - name: Copy mongo_pem_file.txt to the remote host
       copy:
         src: files/{{ mongo_pem_file }} # Path relative to playbook.yml
         dest: "{{ docker_path }}/{{ mongo_pem_file }}" # Destination path on the remote host
       when: not file_stat.stat.exists
 
-    - name: Copy sibling_file.txt to the remote host
+    - name: Copy mongo_db_file.txt to the remote host
       copy:
         src: files/{{ mongo_db_file }} # Path relative to playbook.yml
         dest: "{{ docker_path }}/{{ mongo_db_file }}" # Destination path on the remote host
@@ -110,9 +78,6 @@
             name: "{{ app_name }}"
             state: absent
           when: existing_container_id.stdout != ""
-        # - name: Debug docker_service_started
-        #   debug:
-        #     var: docker_service_started
 
         - name: Create Docker container if it does not exist
           docker_container:
@@ -131,20 +96,8 @@
               S3_mongo_db_file: "{{ docker_path }}/{{ mongo_db_file }}"
           register: container_status
 
-        - name: Copy pem file into the container with owner, group, and mode set
-          community.docker.docker_container_copy_into:
-            container: "{{ app_name }}"
-            path: "{{ docker_path }}/{{ mongo_pem_file }}"
-            container_path: "{{ docker_path }}/{{ mongo_pem_file }}"
-            owner_id: 0 # root
-            group_id: 0 # root
-            mode: 0755 # readable and executable by all users, writable by root
+        - name: Copy pem file to Docker container
+          command: docker cp "{{ docker_path }}/{{ mongo_pem_file }}" {{ app_name }}:{{ docker_path }}/{{ mongo_pem_file }}
 
-        - name: Copy db file into the container with owner, group, and mode set
-          community.docker.docker_container_copy_into:
-            container: "{{ app_name }}"
-            path: "{{ docker_path }}/{{ mongo_db_file }}"
-            container_path: "{{ docker_path }}/{{ mongo_db_file }}"
-            owner_id: 0 # root
-            group_id: 0 # root
-            mode: 0755 # readable and executable by all users, writable by root
+        - name: Copy db file to Docker container
+          command: docker cp "{{ docker_path }}/{{ mongo_db_file }}" {{ app_name }}:{{ docker_path }}/{{ mongo_db_file }}
