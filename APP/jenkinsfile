@@ -171,7 +171,7 @@ pipeline {
                         else
                             touch ${ssh_prv}
                             chmod 600 ${ssh_prv}
-                            echo $$SSH_KEY_PSW > ${ssh_prv}
+                            echo ${SSH_KEY_PSW} > ${ssh_prv}
                         fi
 
                         # Check for the public key, create if not exists
@@ -180,7 +180,7 @@ pipeline {
                         else
                             touch ${ssh_pub}
                             chmod 644 ${ssh_pub}
-                            echo $$SSH_KEY_USR > ${ssh_pub}
+                            echo ${SSH_KEY_USR} > ${ssh_pub}
                         fi
                         '''
         }
