@@ -36,7 +36,6 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 
 ## 5- Pipeline Steps
   ### Jenkins:
-  ![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/pipeline%20stages.jpg)
     * Pipeline:
       - environment section:
         - declare golabl variables to be used in stages
