@@ -33,31 +33,27 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 
 ## 5- Pipeline Steps
   ### Jenkins:
-<<<<<<< HEAD
-=======
+
     * Pipeline:
       - environment section:
         - declare golabl variables to be used in stages
       - Stages:
-        1- clean up stage >> remove old artifacts from jenkins working directory /var/lib/jenkins/workspace
-        2- Checkout Code >> pull repo including project files from github
-        3- Install Dependencies >> install nodejs on development machine needed to test solar system application
-        4- Run Unit Tests
-        5- Run Code Coverage
-        6- Remove previous Docker Image >> check if the application docker image exists on development machine from previous builds and remove it to avoid any     
-           conflicts
-        7- Build Docker Image >> build docker image from Dockerfile of the solar system applicaiton
-        8- Docker-login >> using pre-defined credintials to login dockerhub to push the docker image in the next step
-        9- Push docker image
-        10- Test Docker Container >> pull the docker image pushed from the previous step and try to run it to check the image is working fine
-        11- Provisioning >> use terra form to provision the needed infrastructure on aws cloud (check terraform section)
-        12- Check Terraform Output >> validate the provisioning step is done successfully
-        13- Ssh-keys preparation >> use pre-defined keys on jenkins to create needed private and public key files in the correct path to be used by ansible
-        14- Configuration >> use ansible to configure the provisioned resources (check ansible section)
-        15- Post build action >> at failure or unstable builds send an email notification for the admin
+          - clean up stage >> remove old artifacts from jenkins working directory /var/lib/jenkins/workspace
+          - Checkout Code >> pull repo including project files from github
+          - Install Dependencies >> install nodejs on development machine needed to test solar system application
+          - Run Unit Tests
+          - Run Code Coverage
+          - Remove previous Docker Image >> check if the application docker image exists on development machine from previous builds and remove it to avoid any conflicts
+          - Build Docker Image >> build docker image from Dockerfile of the solar system applicaiton
+          - Docker-login >> using pre-defined credintials to login dockerhub to push the docker image in the next step
+          - Push docker image
+          - Test Docker Container >> pull the docker image pushed from the previous step and try to run it to check the image is working fine
+          - Provisioning >> use terra form to provision the needed infrastructure on aws cloud (check terraform section)
+          - Check Terraform Output >> validate the provisioning step is done successfully
+          - Ssh-keys preparation >> use pre-defined keys on jenkins to create needed private and public key files in the correct path to be used by ansible
+          - Configuration >> use ansible to configure the provisioned resources (check ansible section)
+          - Post build action >> at failure or unstable builds send an email notification for the admin
         
-  
->>>>>>> d498c0c9028bf8fafafc3741d8ebce3be23e2c35
   ### Terraform:
     * Resources:
       - Create VPC with the following:
