@@ -178,6 +178,15 @@ pipeline {
     }
 }
 
+stage('Check Terraform Output') {
+    steps {
+        script {
+            echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
+        }
+    }
+}
+
+
         stage('Configuration') {
             steps {
                 script {
