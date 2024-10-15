@@ -1,24 +1,24 @@
-## CI/CD Pipeline Documentation for Solar System Application ##
+# CI/CD Pipeline Documentation for Solar System Application
 
-# DevOps project Group-2 
+## DevOps project Group-2 
 - Muhammed AbdelGhafar Muhammed
 - Ahmed Khaled Mohamed Gamal
 - Shaimaa Mahmoud Elsaadi Seif
 - Marwa Magdi Zaki Mohamed
 
-# Date: 15/10/2024
+## Date: 15/10/2024
 
-# 1- Project Overview
+## 1- Project Overview
 This project implements an automated CI/CD pipeline to build, test, and deploy a Solar System application using MongoDB as the database. The pipeline leverages Jenkins for continuous integration, Docker for containerization, and Ansible for configuration management, and Terraform for provisioning resources to AWS.
 
-# 2- Technologies Used
+## 2- Technologies Used
 - Jenkins: Continuous integration and delivery server.
 - Docker: Containerization platform for packaging applications and dependencies.
 - Ansible: Configuration management tool to automate deployment.
 - Terraform: Provisioning resources to AWS
 - AWS: Cloud service provider for hosting the application
 
-# 3- Pipeline Architecture
+## 3- Pipeline Architecture
 ![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/pipeline%20architecture.jpg)
 - Source Code Repository: GitHub repository where the application code is stored.
 - Jenkins Server: Manage the CI/CD pipeline.
@@ -27,17 +27,17 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 - Ansible: Manages the deployment of the application to AWS.
 - AWS: Hosts the application and database.
 
-# 4- Setup Instructions Prerequisites
+## 4- Setup Instructions Prerequisites
 - AWS account.
 - Jenkins installed (local or server).
 - Docker installed.
 - Ansible installed.
 - Git installed.
 
-# 5- Pipeline Steps
-  # Jenkins:
+## 5- Pipeline Steps
+  ## Jenkins:
   
-  # Terraform:
+  ## Terraform:
     * Resources:
       - Create VPC with the following:
           - Create public subnet for Ec2 instance.
@@ -60,7 +60,7 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
       - host_user: ec2 user name to be used in Ansible.
       - host_become_pass: ec2 user password to be used in Ansible.
   
-  # Ansible:
+  ## Ansible:
     * EC2 Instance Configration steps:
         - Update APT package cache.
         - Ensure target directory exists.
@@ -78,5 +78,5 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
             - Install Docker on Debian/Ubuntu.
             - Start Docker service.
             
-# 6- Conclusion
+## 6- Conclusion
 This document outlines the implementation of an automated CI/CD pipeline for a Solar System application using Jenkins, Docker, Terraform and Ansible. This pipeline enables efficient and reliable deployment to AWS, ensuring that the application is always up-to-date and fully tested.
