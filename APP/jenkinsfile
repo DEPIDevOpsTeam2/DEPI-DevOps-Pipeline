@@ -4,9 +4,8 @@ pipeline {
     environment {
         DOCKER_HUB_REPO = 'shaimaamelsaadi/solar_system'
         DOCKER_CREDS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE_TAG = '${env.BUILD_NUMBER}'
         EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
-        APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
+        APP_IMG="${DOCKER_HUB_REPO}:${env.BUILD_NUMBER}"
         APP_NAME='SolarApp'
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
@@ -64,11 +63,11 @@ pipeline {
                 script {
                     sh '''
                     cd $WORKSPACE
-                    IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG)
+                    IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$env.BUILD_NUMBER)
 
                     if [ -n "$IMAGE_EXISTS" ]; then
                         echo "Docker image exists. Deleting existing image..."
-                        docker rmi -f $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
+                        docker rmi -f $DOCKER_HUB_REPO:$env.BUILD_NUMBER
                     else
                         echo "Docker image does not exist. Proceeding to build a new image..."
                     fi
@@ -82,7 +81,7 @@ pipeline {
                 script {
                     sh '''
                     cd $WORKSPACE/APP
-                    docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .
+                    docker build -t $DOCKER_HUB_REPO:$env.BUILD_NUMBER .
                     '''
                 }
             }
@@ -97,7 +96,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+                    def app = docker.image("$DOCKER_HUB_REPO:$env.BUILD_NUMBER")
                     app.push()
                 }
             }
@@ -106,7 +105,7 @@ pipeline {
         // stage('Test Docker Container') {
         //     steps {
         //         script {
-        //             sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
+        //             sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$env.BUILD_NUMBER"
         //             sh 'sleep 5'
         //             sh 'curl http://localhost:3000'
         //         }
