@@ -135,11 +135,20 @@ pipeline {
                             -var "aws_secret_key=$AWS_SECRET_ACCESS_KEY" \
                             -var "aws_region=${AWS_REGION}"
                             '''
+                            env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
                         }
                     }
                 }
             }
         }
+        stage('Check Terraform Output') {
+             steps {
+                script {
+                    echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
+        }
+    }
+}
+
 
         stage('ssh') {
             steps {
@@ -178,13 +187,7 @@ pipeline {
     }
 }
 
-stage('Check Terraform Output') {
-    steps {
-        script {
-            echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
-        }
-    }
-}
+
 
 
         stage('Configuration') {
