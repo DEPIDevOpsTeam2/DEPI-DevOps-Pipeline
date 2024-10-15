@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB_REPO = 'shaimaamelsaadi/solar_system'
         DOCKER_CREDS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE_TAG = 'latest'
+        DOCKER_IMAGE_TAG = ${env.BUILD_NUMBER}
         EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
         APP_NAME='SolarApp'
