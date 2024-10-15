@@ -9,19 +9,40 @@
     mongo_uri: "{{ lookup('env', 'MONGO_URI') }}"
     mongo_db: "{{ lookup('env', 'MONGO_DB') }}"
     mongo_collection: "{{ lookup('env', 'MONGO_COLLECTION') }}"
-    bucket_name: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
-    mongo_access_key: "{{ lookup('env', 'S3_MONGO_ACCESS_KEY') }}" # The S3 object key
-    mongo_db_key: "{{ lookup('env', 'S3_MONGO_DB_KEY') }}" # The S3 object key
+    mongo_pem_file: global-bundle.pem
+    mongo_db_file: superData.planets.json
     aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
     aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
     aws_region: "{{ lookup('env', 'AWS_REGION') }}"
-    venv_path: /opt/myenv # Path to the virtual environment
     docker_path: /usr/app
 
   tasks:
-    - name: Update APT package cache
-      apt:
-        update_cache: yes
+    # - name: Update APT package cache
+    #   apt:
+    #     update_cache: yes
+    - name: Check if the file exists
+      stat:
+        path: "{{ docker_path }}/{{ mongo_pem_file }}" # Specify the path to the file
+      register: file_stat
+
+    - name: Create the directory for uploaded files
+      file:
+        path: "{{ docker_path }}" # Specify the path where you want to create the directory
+        state: directory
+        mode: "0755"
+      when: not file_stat.stat.exists
+
+    - name: Copy sibling_file.txt to the remote host
+      copy:
+        src: files/{{ mongo_pem_file }} # Path relative to playbook.yml
+        dest: "{{ docker_path }}/{{ mongo_pem_file }}" # Destination path on the remote host
+      when: not file_stat.stat.exists
+
+    - name: Copy sibling_file.txt to the remote host
+      copy:
+        src: files/{{ mongo_db_file }} # Path relative to playbook.yml
+        dest: "{{ docker_path }}/{{ mongo_db_file }}" # Destination path on the remote host
+      when: not file_stat.stat.exists
 
     - name: Prepare Docker
       block:
@@ -77,17 +98,17 @@
               - "3000:3000"
             env:
               MONGO_URI: "{{ mongo_uri }}"
-              S3_MONGO_ACCESS_KEY: "{{ docker_path }}/{{ mongo_access_key }}"
+              S3_mongo_pem_file: "{{ docker_path }}/{{ mongo_pem_file }}"
               MONGO_DB: "{{ mongo_db }}"
               MONGO_COLLECTION: "{{ mongo_collection }}"
-              S3_MONGO_DB_KEY: "{{ docker_path }}/{{ mongo_db_key }}"
+              S3_mongo_db_file: "{{ docker_path }}/{{ mongo_db_file }}"
           register: container_status
 
         - name: Copy pem file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
-            path: "{{ mongo_access_key }}"
-            container_path: "{{ docker_path }}/{{ mongo_access_key }}"
+            path: "{{ docker_path }}/{{ mongo_pem_file }}"
+            container_path: "{{ docker_path }}/{{ mongo_pem_file }}"
             owner_id: 0 # root
             group_id: 0 # root
             mode: 0755 # readable and executable by all users, writable by root
@@ -95,8 +116,8 @@
         - name: Copy db file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
-            path: "{{ mongo_db_key }}"
-            container_path: "{{ docker_path }}/{{ mongo_db_key }}"
+            path: "{{ docker_path }}/{{ mongo_db_file }}"
+            container_path: "{{ docker_path }}/{{ mongo_db_file }}"
             owner_id: 0 # root
             group_id: 0 # root
             mode: 0755 # readable and executable by all users, writable by root
