@@ -139,26 +139,39 @@ pipeline {
         stage('ssh') {
             steps {
                 script {
-                    sh '''
-                    USER=$(whoami)
-                    ssh_prv="/home/${USER}/.ssh/id_aws_ec2"
-                    ssh_pub="/home/${USER}/.ssh/id_aws_ec2.pub"
-                    if [ -e "$ssh_prv" ]; then
-                        echo "Private key exists."
-                    else
-                        touch /home/${USER}/.ssh/id_aws_ec2
-                    fi
-                    if [ -e "$ssh_pub" ]; then
-                        echo "Public key exists."
-                    else
-                        touch /home/${USER}/.ssh/id_aws_ec2.pub
-                    fi
-                    echo $SSH_KEY_USR > /home/${USER}/.ssh/id_aws_ec2.pub
-                    echo $SSH_KEY_PSW > /home/${USER}/.ssh/id_aws_ec2
-                    '''
-                }
-            }
+                        sh '''
+                        USER=$(whoami)
+                        ssh_dir="/home/${USER}/.ssh"
+                        ssh_prv="${ssh_dir}/id_aws_ec2"
+                        ssh_pub="${ssh_dir}/id_aws_ec2.pub"
+
+                        # Create the .ssh directory if it doesn't exist
+                        mkdir -p ${ssh_dir}
+
+                        # Set the correct permissions on the .ssh directory
+                        chmod 700 ${ssh_dir}
+
+                        # Check for the private key, create if not exists
+                        if [ -e "$ssh_prv" ]; then
+                            echo "Private key exists."
+                        else
+                            touch ${ssh_prv}
+                            chmod 600 ${ssh_prv}
+                            echo $$SSH_KEY_PSW > ${ssh_prv}
+                        fi
+
+                        # Check for the public key, create if not exists
+                        if [ -e "$ssh_pub" ]; then
+                            echo "Public key exists."
+                        else
+                            touch ${ssh_pub}
+                            chmod 644 ${ssh_pub}
+                            echo $$SSH_KEY_USR > ${ssh_pub}
+                        fi
+                        '''
         }
+    }
+}
 
         stage('Configuration') {
             steps {
