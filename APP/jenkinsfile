@@ -174,11 +174,10 @@ pipeline {
 //                         if [ -e "$ssh_pub" ]; then
 //                             rm ${ssh_pub}
 //                         fi
-
-//                         cp ../ssh/id_aws_ec2  ${ssh_dir}
-//                         cp ../ssh/id_aws_ec2.pub  ${ssh_dir}
+//                         cp -r ../ssh/*  ${ssh_dir}/
 //                         chmod 600 ${ssh_prv}
 //                         chmod 644 ${ssh_pub} 
+
 //                         '''
 //         }
 //     }
@@ -201,6 +200,7 @@ pipeline {
                         env.MONGO_DB="solar"
                         env.MONGO_COLLECTION="plantes"
                         sh """
+                        pip3 install docker
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-galaxy collection install community.docker
                         ansible-playbook -i inventory.yml\
