@@ -194,19 +194,18 @@ pipeline {
             steps {
                 script {
                     dir('./Ansible') {
+                        sh 'USER=$(whoami)'
                         def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-                        def host_ip = terraformOutputJson.host_ip.value
-                        def mongo_uri = terraformOutputJson.mongo_uri.value
-                        def host_user = terraformOutputJson.host_user.value
-                        def host_become_pass = terraformOutputJson.host_become_pass.value
-
+                        env.HOST_IP = terraformOutputJson.host_ip.value
+                        env.MONGO_URI = terraformOutputJson.mongo_uri.value
+                        env.HOST_USER = terraformOutputJson.host_user.value
+                        env.HOST_BECOME_PASS = terraformOutputJson.host_become_pass.value
+                        env.HOST_SSH_PRV_KEY=/home/${USER}/.ssh/id_aws_ec2
+                        env.MONGO_DB=solar
+                        env.MONGO_COLLECTION=plantes
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
-                        ansible-playbook -i inventory.yml \
-                        --extra-vars 'mongo_uri=${mongo_uri} \
-                        host_ip=${host_ip} \
-                        host_user=${host_user} \
-                        host_become_pass=${host_become_pass}'\
+                        ansible-playbook -i inventory.yml\
                         playbook.yml
                         """
                     }
