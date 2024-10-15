@@ -7,6 +7,7 @@ pipeline {
         DOCKER_IMAGE_TAG = 'latest'
         EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
+        APP_NAME='SolarApp'
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
     }
