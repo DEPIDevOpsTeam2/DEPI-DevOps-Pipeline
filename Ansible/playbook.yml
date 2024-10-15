@@ -11,15 +11,42 @@
     mongo_collection: "{{ lookup('env', 'MONGO_COLLECTION') }}"
     mongo_pem_file: global-bundle.pem
     mongo_db_file: superData.planets.json
-    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
     docker_path: /usr/app
+    venv_path: /opt/myenv
 
   tasks:
-    # - name: Update APT package cache
-    #   apt:
-    #     update_cache: yes
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Ensure Python 3 is installed
+      apt:
+        name: python3
+        state: present
+        update_cache: yes
+
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Ensure python3-venv is installed
+      apt:
+        name: python3-venv
+        state: present
+
+    - name: Create a Python virtual environment
+      command: python3 -m venv {{ venv_path }}
+      args:
+        creates: "{{ venv_path }}"
+
+    - name: Install pip packages in the virtual environment
+      command: "{{ venv_path }}/bin/pip install boto3 packaging requests"
+
+    - name: Set the Python interpreter to the virtual environment
+      set_fact:
+        ansible_python_interpreter: "{{ venv_path }}/bin/python"
+
     - name: Check if the file exists
       stat:
         path: "{{ docker_path }}/{{ mongo_pem_file }}" # Specify the path to the file
