@@ -194,13 +194,13 @@ pipeline {
             steps {
                 script {
                     dir('./Ansible') {
-                        sh 'USER=$(whoami)'
+                      
                         def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
                         env.HOST_IP = terraformOutputJson.host_ip.value
                         env.MONGO_URI = terraformOutputJson.mongo_uri.value
                         env.HOST_USER = terraformOutputJson.host_user.value
                         env.HOST_BECOME_PASS = terraformOutputJson.host_become_pass.value
-                        env.HOST_SSH_PRV_KEY=/home/${USER}/.ssh/id_aws_ec2
+                        env.HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2
                         env.MONGO_DB=solar
                         env.MONGO_COLLECTION=plantes
                         sh """
