@@ -205,6 +205,7 @@ pipeline {
                         env.MONGO_COLLECTION="plantes"
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-galaxy collection install community.docker
                         ansible-playbook -i inventory.yml\
                         playbook.yml
                         """
