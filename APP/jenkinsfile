@@ -115,8 +115,8 @@ pipeline {
         stage('Provisioning') {
             steps {
                 script {
-                    sh 'll'
-                    dir('../Terraform') {
+                   
+                    dir('./Terraform') {
                         sh 'terraform init'
                         withCredentials([[
                             credentialsId: 'AWS_CREDS',
@@ -162,7 +162,7 @@ pipeline {
         stage('Configuration') {
             steps {
                 script {
-                    dir('../Ansible') {
+                    dir('./Ansible') {
                         def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
                         def host_ip = terraformOutputJson.host_ip.value
                         def mongo_uri = terraformOutputJson.mongo_uri.value
