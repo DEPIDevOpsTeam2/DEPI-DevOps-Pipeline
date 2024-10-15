@@ -171,6 +171,7 @@ pipeline {
                         else
                             touch ${ssh_prv}
                             chmod 600 ${ssh_prv}
+                            echo ${SSH_KEY_PSW}
                             echo ${SSH_KEY_PSW} > ${ssh_prv}
                         fi
 
@@ -180,6 +181,7 @@ pipeline {
                         else
                             touch ${ssh_pub}
                             chmod 644 ${ssh_pub}
+                             echo ${SSH_KEY_USR}
                             echo ${SSH_KEY_USR} > ${ssh_pub}
                         fi
                         '''
