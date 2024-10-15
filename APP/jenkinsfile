@@ -177,7 +177,7 @@ pipeline {
 //                         if [ -e "$ssh_pub" ]; then
 //                             rm ${ssh_pub}
 //                         fi
-//                         cp -r ../ssh/*  ${ssh_dir}/
+//                         cp -r /ssh/*  ${ssh_dir}/
 //                         chmod 600 ${ssh_prv}
 //                         chmod 644 ${ssh_pub} 
 
