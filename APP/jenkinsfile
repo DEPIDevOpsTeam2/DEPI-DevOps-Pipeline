@@ -154,6 +154,7 @@ pipeline {
             steps {
                 script {
                             sh 'pwd'
+                            sh 'ls'
 //                         sh '''
 //                         USER=$(whoami)
 //                         ssh_dir="/home/${USER}/.ssh"
