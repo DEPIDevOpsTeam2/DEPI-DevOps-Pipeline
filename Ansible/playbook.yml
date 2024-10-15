@@ -12,7 +12,6 @@
     bucket_name: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
     mongo_access_key: "{{ lookup('env', 'S3_MONGO_ACCESS_KEY') }}" # The S3 object key
     mongo_db_key: "{{ lookup('env', 'S3_MONGO_DB_KEY') }}" # The S3 object key
-    download_path: /usr/local # Local path to save the object
     aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
     aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
     aws_region: "{{ lookup('env', 'AWS_REGION') }}"
@@ -23,67 +22,6 @@
     - name: Update APT package cache
       apt:
         update_cache: yes
-
-    - name: Ensure target directory exists
-      file:
-        path: "{{ download_path }}/{{ app_name }}"
-        state: directory
-        mode: "0755"
-
-    - name: Prepare Python & AWS
-      block:
-          - name: Ensure Python 3 is installed
-            apt:
-              name: python3
-              state: present
-              update_cache: yes
-
-          - name: Ensure pip is installed
-            apt:
-              name: python3-pip
-              state: present
-
-          - name: Ensure python3-venv is installed
-            apt:
-              name: python3-venv
-              state: present
-
-          - name: Create a Python virtual environment
-            command: python3 -m venv {{ venv_path }}
-            args:
-              creates: "{{ venv_path }}"
-
-          - name: Install pip packages in the virtual environment
-            command: "{{ venv_path }}/bin/pip install boto3 packaging requests"
-
-          - name: Set the Python interpreter to the virtual environment
-            set_fact:
-              ansible_python_interpreter: "{{ venv_path }}/bin/python"
-            
-          - name: Download mongo access PEM file from S3
-            amazon.aws.s3_object:
-              bucket: "{{ bucket_name }}"
-              object: "{{ mongo_access_key }}"
-              dest: "{{ download_path }}/{{ app_name }}/{{ mongo_access_key }}"
-              mode: get
-              aws_access_key: "{{ aws_access_key }}"
-              aws_secret_key: "{{ aws_secret_key }}"
-              region: "{{ aws_region }}" # Optional: specify if needed
-            register: s3_pem_download
-
-          # - name: Display pem download result
-          #   debug:
-          #     var: s3_pem_download
-          - name: Download mongo data file from S3
-            amazon.aws.s3_object:
-              bucket: "{{ bucket_name }}"
-              object: "{{ mongo_db_key }}"
-              dest: "{{ download_path }}/{{ app_name }}/{{ mongo_db_key }}"
-              mode: get
-              aws_access_key: "{{ aws_access_key }}"
-              aws_secret_key: "{{ aws_secret_key }}"
-              region: "{{ aws_region }}" # Optional: specify if needed
-            register: s3_mongo_db_download
 
     - name: Prepare Docker
       block:
@@ -111,7 +49,7 @@
         - name: Check if the Docker container exists
           command: docker ps -q -f name={{ app_name }}
           register: existing_container_id
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Stop the existing container if it exists
           docker_container:
@@ -137,8 +75,6 @@
             restart_policy: unless-stopped
             ports:
               - "3000:3000"
-            # volumes:
-            #   - /usr/data:/usr/app/data  #docker_path = /usr/app/ => use static to avoid container restart issue
             env:
               MONGO_URI: "{{ mongo_uri }}"
               S3_MONGO_ACCESS_KEY: "{{ docker_path }}/{{ mongo_access_key }}"
@@ -150,17 +86,17 @@
         - name: Copy pem file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
-            path: "{{ download_path }}/{{ app_name }}/{{ mongo_access_key }}"
+            path: "{{ mongo_access_key }}"
             container_path: "{{ docker_path }}/{{ mongo_access_key }}"
-            owner_id: 0  # root
-            group_id: 0  # root
-            mode: 0755  # readable and executable by all users, writable by root
+            owner_id: 0 # root
+            group_id: 0 # root
+            mode: 0755 # readable and executable by all users, writable by root
 
         - name: Copy db file into the container with owner, group, and mode set
           community.docker.docker_container_copy_into:
             container: "{{ app_name }}"
-            path: "{{ download_path }}/{{ app_name }}/{{ mongo_db_key }}"
+            path: "{{ mongo_db_key }}"
             container_path: "{{ docker_path }}/{{ mongo_db_key }}"
-            owner_id: 0  # root
-            group_id: 0  # root
-            mode: 0755  # readable and executable by all users, writable by root
+            owner_id: 0 # root
+            group_id: 0 # root
+            mode: 0755 # readable and executable by all users, writable by root
