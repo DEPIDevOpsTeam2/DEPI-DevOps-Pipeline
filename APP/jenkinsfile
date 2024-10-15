@@ -197,9 +197,6 @@ pipeline {
                         def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
                         def host_ip = terraformOutputJson.host_ip.value
                         def mongo_uri = terraformOutputJson.mongo_uri.value
-                        def s3_bucket_name = terraformOutputJson.s3_bucket_name.value
-                        def s3_mongo_access_key = terraformOutputJson.s3_mongo_access_key.value
-                        def s3_mongo_db_key = terraformOutputJson.s3_mongo_db_key.value
                         def host_user = terraformOutputJson.host_user.value
                         def host_become_pass = terraformOutputJson.host_become_pass.value
 
@@ -207,12 +204,9 @@ pipeline {
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-playbook -i inventory.yml \
                         --extra-vars 'mongo_uri=${mongo_uri} \
-                        s3_bucket_name=${s3_bucket_name} \
-                        s3_mongo_access_key=${s3_mongo_access_key} \
                         host_ip=${host_ip} \
                         host_user=${host_user} \
-                        host_become_pass=${host_become_pass} \
-                        s3_mongo_db_key=${s3_mongo_db_key}' \
+                        host_become_pass=${host_become_pass}'\
                         playbook.yml
                         """
                     }
