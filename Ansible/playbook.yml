@@ -111,10 +111,8 @@
               - "3000:3000"
             env:
               MONGO_URI: "{{ mongo_uri }}"
-              S3_mongo_pem_file: "{{ docker_path }}/{{ mongo_pem_file }}"
-              MONGO_DB: "{{ mongo_db }}"
               MONGO_COLLECTION: "{{ mongo_collection }}"
-              S3_mongo_db_file: "{{ docker_path }}/{{ mongo_db_file }}"
+              S3_mongo_db_file: "{{ mongo_db_file }}"
           register: container_status
 
         - name: Copy pem file to Docker container
