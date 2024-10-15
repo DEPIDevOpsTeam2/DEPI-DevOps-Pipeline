@@ -150,9 +150,10 @@ pipeline {
 }
 
 
-//         stage('ssh') {
-//             steps {
-//                 script {
+        stage('ssh') {
+            steps {
+                script {
+                            sh 'pwd'
 //                         sh '''
 //                         USER=$(whoami)
 //                         ssh_dir="/home/${USER}/.ssh"
@@ -179,9 +180,9 @@ pipeline {
 //                         chmod 644 ${ssh_pub} 
 
 //                         '''
-//         }
-//     }
-// }
+        }
+    }
+}
 
 
 
@@ -200,7 +201,6 @@ pipeline {
                         env.MONGO_DB="solar"
                         env.MONGO_COLLECTION="plantes"
                         sh """
-                        pip3 install docker
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-galaxy collection install community.docker
                         ansible-playbook -i inventory.yml\
