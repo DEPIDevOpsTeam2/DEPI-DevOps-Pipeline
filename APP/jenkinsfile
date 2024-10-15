@@ -115,6 +115,7 @@ pipeline {
         stage('Provisioning') {
             steps {
                 script {
+                    sh 'pwd'
                     dir('../Terraform') {
                         sh 'terraform init'
                         withCredentials([[
