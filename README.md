@@ -35,25 +35,9 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 - Git installed.
 
 ## 5- Pipeline Steps
-  ## Jenkins:
-    # Stages:
-      - Clean up >> remove old artifacts from jenkins working directory /var/lib/jenkins/workspace
-      - Checkout code >> pull repo files from github
-      - Install Dependencies >> install nodejs
-      - Run Unit Tests
-      - Run Code Coverage
-      - Prepare Docker Image >> check if the image exists remove it
-      - Build Docker Image
-      - Docker-login >> login to dockerhub using pre-configured credintials
-      - Push Docker Image
-      - Test Docker Container >> pull the image and run it to check everything is running
-      - Provisioning >> using terrafrom to provision vpc, subnets, database, ec2 on aws
-      - Check Terraform Output >> check feedback of provisioning process
-      - Prepare params for ssh >> setup ssh keys used implicitly by ansible
-      - Configuration >> using ansible to configure the provisioned resources on aws
-      - Post action >> send email at failure
+  ### Jenkins:
   
-  ## Terraform:
+  ### Terraform:
     * Resources:
       - Create VPC with the following:
           - Create public subnet for Ec2 instance.
@@ -76,23 +60,19 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
       - host_user: ec2 user name to be used in Ansible.
       - host_become_pass: ec2 user password to be used in Ansible.
   
-  ## Ansible:
+  ### Ansible:
     * EC2 Instance Configration steps:
         - Update APT package cache.
-        - Ensure target directory exists.
-        - Prepare Python & AWS.
-            -  Ensure Python 3 is installed.
-            -  Ensure pip is installed.
-            -  Ensure python3-venv is installed.
-            -  Create a Python virtual environment.
-            -  Install pip packages in the virtual environment.
-            -  Set the Python interpreter to the virtual environment.
-            -  Download mongo access PEM file from S3 bucket.
-            -  Download mongo data file from S3 bucket.
         - Prepare Docker
             - Check if Docker is installed.
             - Install Docker on Debian/Ubuntu.
             - Start Docker service.
+            - Check if the Docker container exists.
+            - Stop the existing container if it exists.
+            - Remove the existing container if it exists.
+            - Create Docker container if it does not exist.
+            - Copy pem file into the container with owner, group, and mode set.
+            - Copy db file into the container with owner, group, and mode set.
             
 ## 6- Conclusion
 This document outlines the implementation of an automated CI/CD pipeline for a Solar System application using Jenkins, Docker, Terraform and Ansible. This pipeline enables efficient and reliable deployment to AWS, ensuring that the application is always up-to-date and fully tested.
