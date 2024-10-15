@@ -179,7 +179,7 @@ pipeline {
                              ls ${ssh_dir} 
                         fi
                         ls ${ssh_dir} 
-                        cp -r /ssh/*  ${ssh_dir}/
+                        cp -r ./ssh/*  ${ssh_dir}/
                         ls ${ssh_dir} 
                         chmod 600 ${ssh_prv}
                         chmod 644 ${ssh_pub} 
