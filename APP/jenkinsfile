@@ -9,8 +9,6 @@ pipeline {
         APP_IMG="${DOCKER_HUB_REPO}:${DOCKER_IMAGE_TAG}"
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
-        
-
        
     }
 //add stages to check ansible and terraform and docker if not install it 
@@ -39,31 +37,31 @@ pipeline {
             }
         }
 
-        // stage('Run Unit Tests') {
-        //     steps {
-        //         script{
-        //          withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-        //             sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
+        stage('Run Unit Tests') {
+            steps {
+                script{
+                 withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
+                    sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP test --verbose'
 
-        //         }
+                }
  
-        //         } 
-        //     }
-        // }
-        // stage('Run Code Coverage') {
-        //     steps {
-        //         withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
-        //         sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
-        //         publishHTML target: [
-        //              reportName: 'Coverage Report',
-        //              reportDir: 'coverage',
-        //              reportFiles: 'index.html',
-        //              alwaysLinkToLastBuild: true
-        //         ]
-        //         }
-        //     }
-        // }
-         stage('Prepare Docker Image') {
+                } 
+            }
+        }
+        stage('Run Code Coverage') {
+            steps {
+                withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData"]){
+                sh 'npm --prefix /var/lib/jenkins/workspace/SolarSystem/APP  run  coverage'
+                publishHTML target: [
+                     reportName: 'Coverage Report',
+                     reportDir: 'coverage',
+                     reportFiles: 'index.html',
+                     alwaysLinkToLastBuild: true
+                ]
+                }
+            }
+        }
+        stage('Prepare Docker Image') {
             steps {
                 script {
                     sh '''
@@ -91,7 +89,7 @@ pipeline {
                 }
             }
         }
-          stage("docker-login"){
+        stage("docker-login"){
             steps{
 
                 sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
@@ -100,24 +98,24 @@ pipeline {
         }
         stage('Push Docker Image') {
             steps {
-              script{
-                def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-                app.push()
+                script{
+                    def app = docker.image("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+                    app.push()
             }
             }
         }
         
-//         stage('Test Docker Container') {
-//             steps {
-//                 script {
-//                     sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG "
-//                     // def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
-//                     // dockerImage.run('-d -p 3000:3000')
-//                     sh 'sleep 5' 
-//                     sh 'curl http://localhost:3000'
-//                     }
-//             }
-// }
+        stage('Test Docker Container') {
+            steps {
+                script {
+                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG "
+                    // def dockerImage = docker.build("$DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG")
+                    // dockerImage.run('-d -p 3000:3000')
+                    sh 'sleep 5' 
+                    sh 'curl http://localhost:3000'
+                    }
+            }
+}
         stage('Provisioning') {
             steps {
                 script {
@@ -197,11 +195,11 @@ pipeline {
            
     post{
 
-            failure {
-                mail to: "${EMAIL_RECIPIENTS}",
-                    subject: "❌ Build Failed: ${JOB_NAME} - Build #${BUILD_NUMBER}",
-                    body: """<p>Oops! The build has failed.</p>
-                          <p><strong>Job:</strong> ${JOB_NAME}</p>
+        failure {
+            mail to: "${EMAIL_RECIPIENTS}",
+                subject: "❌ Build Failed: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                body: """<p>Oops! The build has failed.</p>
+                         <p><strong>Job:</strong> ${JOB_NAME}</p>
                           <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
                           <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
                     mimeType: 'text/html'
@@ -210,12 +208,12 @@ pipeline {
 
         unstable {
             mail to: "${EMAIL_RECIPIENTS}",
-                 subject: "⚠️ Build Unstable: ${JOB_NAME} - Build #${BUILD_NUMBER}",
-                 body: """<p>The build is unstable.</p>
+                subject: "⚠️ Build Unstable: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                body: """<p>The build is unstable.</p>
                           <p><strong>Job:</strong> ${JOB_NAME}</p>
                           <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
                           <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
-                 mimeType: 'text/html'
+                    mimeType: 'text/html'
                 
         }
     }
