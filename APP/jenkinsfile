@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Prepare Jenkins Inputs') {
             steps {
-                sh 'echo $BUILD_NUMBER'
+               
                 echo 'Preparing Jenkins inputs...'
             }
         }
@@ -64,11 +64,11 @@ pipeline {
                 script {
                     sh '''
                     cd $WORKSPACE
-                    IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:${env.BUILD_NUMBER})
+                    IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$BUILD_NUMBER)
 
                     if [ -n "$IMAGE_EXISTS" ]; then
                         echo "Docker image exists. Deleting existing image..."
-                        docker rmi -f $DOCKER_HUB_REPO:${env.BUILD_NUMBER}
+                        docker rmi -f $DOCKER_HUB_REPO:$BUILD_NUMBER
                     else
                         echo "Docker image does not exist. Proceeding to build a new image..."
                     fi
@@ -82,7 +82,7 @@ pipeline {
                 script {
                     sh '''
                     cd $WORKSPACE/APP
-                    docker build -t $DOCKER_HUB_REPO:${env.BUILD_NUMBER} .
+                    docker build -t $DOCKER_HUB_REPO:$BUILD_NUMBER .
                     '''
                 }
             }
