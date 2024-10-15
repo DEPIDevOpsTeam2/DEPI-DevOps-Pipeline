@@ -1,10 +1,6 @@
 # CI/CD Pipeline Documentation for Solar System Application
 
 ## DevOps project Group-2 
-- Muhammed AbdelGhafar Muhammed
-- Ahmed Khaled Mohamed Gamal
-- Shaimaa Mahmoud Elsaadi Seif
-- Marwa Magdi Zaki Mohamed
 
 ## Date: 15/10/2024
 
@@ -12,11 +8,12 @@
 This project implements an automated CI/CD pipeline to build, test, and deploy a Solar System application using MongoDB as the database. The pipeline leverages Jenkins for continuous integration, Docker for containerization, and Ansible for configuration management, and Terraform for provisioning resources to AWS.
 
 ## 2- Technologies Used
-- Jenkins: Continuous integration and delivery server.
-- Docker: Containerization platform for packaging applications and dependencies.
-- Ansible: Configuration management tool to automate deployment.
+- Jenkins ⚙️: Continuous integration and delivery server.
+- Docker 🐳: Containerization platform for packaging applications and dependencies.
+- Ansible 📦: Configuration management tool to automate deployment.
 - Terraform: Provisioning resources to AWS
-- AWS: Cloud service provider for hosting the application
+- AWS ☁️: Cloud service provider for hosting the application
+![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/jenkinscicd.png)
 
 ## 3- Pipeline Architecture
 ![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/pipeline%20architecture.jpg)
@@ -36,6 +33,8 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
 
 ## 5- Pipeline Steps
   ### Jenkins:
+<<<<<<< HEAD
+=======
     * Pipeline:
       - environment section:
         - declare golabl variables to be used in stages
@@ -58,6 +57,7 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
         15- Post build action >> at failure or unstable builds send an email notification for the admin
         
   
+>>>>>>> d498c0c9028bf8fafafc3741d8ebce3be23e2c35
   ### Terraform:
     * Resources:
       - Create VPC with the following:
@@ -94,6 +94,29 @@ This project implements an automated CI/CD pipeline to build, test, and deploy a
             - Create Docker container if it does not exist.
             - Copy pem file into the container with owner, group, and mode set.
             - Copy db file into the container with owner, group, and mode set.
-            
-## 6- Conclusion
+
+## 6- Results
+  ### CI Pipeline:
+![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/CI.png) 
+  ### CI/CD Pipeline:
+![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/CI_CD.png) 
+  ### Failure Notification Mail
+![Alt text](https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline/blob/production/notification_mail.png) 
+
+## 7- Conclusion
 This document outlines the implementation of an automated CI/CD pipeline for a Solar System application using Jenkins, Docker, Terraform and Ansible. This pipeline enables efficient and reliable deployment to AWS, ensuring that the application is always up-to-date and fully tested.
+
+## 8- Acknowledgements
+- [Jenkins Documentation](https://www.jenkins.io/doc/)
+- [Docker Documentation](https://docs.docker.com/)
+- [Ansible Documentation](https://docs.ansible.com/ansible/latest/index.html)
+
+## 9-License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 10-Team
+- Muhammed AbdelGhafar Muhammed
+- Ahmed Khaled Mohamed Gamal
+- Shaimaa Mahmoud Elsaadi Seif
+- Marwa Magdi Zaki Mohamed
+
