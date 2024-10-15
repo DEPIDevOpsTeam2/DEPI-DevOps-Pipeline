@@ -102,15 +102,15 @@ pipeline {
             }
         }
 
-        // stage('Test Docker Container') {
-        //     steps {
-        //         script {
-        //             sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
-        //             sh 'sleep 5'
-        //             sh 'curl http://localhost:3000'
-        //         }
-        //     }
-        // }
+        stage('Test Docker Container') {
+            steps {
+                script {
+                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG"
+                    sh 'sleep 5'
+                    sh 'curl http://localhost:3000'
+                }
+            }
+        }
 
         stage('Provisioning') {
             steps {
