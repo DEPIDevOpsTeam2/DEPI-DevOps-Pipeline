@@ -34,20 +34,6 @@ pipeline {
                 sh 'npm --prefix $WORKSPACE/APP install'
             }
         }
-        stage('Run APP-Insert Data') {
-            steps {
-                script {
-                    withEnv(["MONGO_URI=mongodb://admin:admin@localhost:27017/",
-                             "IS_TEST=true"]) {
-                               
-                        sh '''
-                        npm --prefix $WORKSPACE/APP start --verbose
-                        '''
-                    }
-                }
-            }
-        }
-
 
         stage('Run Unit Tests') {
             steps {
