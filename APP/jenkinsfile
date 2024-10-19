@@ -181,7 +181,7 @@ pipeline {
                         def mongo_uri = terraformOutputJson.mongo_uri.value
                         def host_user = terraformOutputJson.host_user.value
                         def host_become_pass = terraformOutputJson.host_become_pass.value
-                        def host_ssh_prv_key=/home/jenkins/.ssh/id_aws_ec2
+                        def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         printenv
