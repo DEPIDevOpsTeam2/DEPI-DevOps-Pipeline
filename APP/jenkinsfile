@@ -194,13 +194,13 @@ pipeline {
                         export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
                         export HOST_BECOME_PASS=${host_become_pass}
 
-                        printenv APP_NAME
-                        printenv APP_IMG
-                        printenv HOST_IP
-                        printenv MONGO_URI
-                        printenv HOST_USER
-                        printenv HOST_SSH_PRV_KEY
-                        printenv HOST_BECOME_PASS
+                        echo $APP_NAME
+                        echo $APP_IMG
+                        echo $HOST_IP
+                        echo $MONGO_URI
+                        echo $HOST_USER
+                        echo $HOST_SSH_PRV_KEY
+                        echo $HOST_BECOME_PASS
 
                         ansible-playbook -i inventory.yml playbook.yml
                         """
