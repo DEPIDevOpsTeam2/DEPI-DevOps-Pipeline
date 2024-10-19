@@ -195,7 +195,13 @@ pipeline {
                         export HOST_BECOME_PASS=${host_become_pass}
 
                         printenv
-
+                        echo "\$APP_NAME"
+                        echo "\$APP_IMG"
+                        echo "\$HOST_IP"
+                        echo "\$MONGO_URI"
+                        echo "\$HOST_USER"
+                        echo "\$HOST_SSH_PRV_KEY"
+                        echo "\$HOST_BECOME_PASS"
 
                         ansible-playbook -i inventory.yml playbook.yml
                         """
