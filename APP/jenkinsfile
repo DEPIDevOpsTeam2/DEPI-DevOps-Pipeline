@@ -191,7 +191,7 @@ pipeline {
                         export HOST_IP=${host_ip}
                         export MONGO_URI=${mongo_uri}
                         export HOST_USER=${host_user}
-                        export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
+                        export HOST_SSH_PRV_KEY="${host_ssh_prv_key}"
                         export HOST_BECOME_PASS=${host_become_pass}
 
                         printenv
