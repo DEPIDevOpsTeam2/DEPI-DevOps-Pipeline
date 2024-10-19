@@ -184,7 +184,7 @@ pipeline {
                         def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
-                        export HOST_IP=18.217.68.10
+                        export HOST_IP="18.217.68.10"
                         echo $HOST_IP
                         // echo $HOST_USER
                         // echo $HOST_BECOME_PASS
