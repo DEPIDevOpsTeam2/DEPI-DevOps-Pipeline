@@ -35,16 +35,16 @@ pipeline {
             }
         }
 
-        // stage('Run Unit Tests') {
-        //     steps {
-        //         script {
-        //             withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData",
-        //                      "IS_TEST=true"]) {
-        //                 sh 'npm --prefix $WORKSPACE/APP test --verbose'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData",
+                             "IS_TEST=true"]) {
+                        sh 'npm --prefix $WORKSPACE/APP test --verbose'
+                    }
+                }
+            }
+        }
 
         // stage('Run Code Coverage') {
         //     steps {
@@ -182,9 +182,9 @@ pipeline {
                         def mongo_uri = terraformOutputJson.mongo_uri.value
                         def host_user = terraformOutputJson.host_user.value
                         def host_become_pass = terraformOutputJson.host_become_pass.value
-                        env.HOST_SSH_PRV_KEY="/home/jenkins/.ssh/id_aws_ec2"
-                      
+
                         sh """
+                        export HOST_SSH_PRV_KEY=/home/${USER}/.ssh/id_aws_ec2
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-playbook -i inventory.yml \
                         --extra-vars 'mongo_uri=${mongo_uri} \
