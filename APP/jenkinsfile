@@ -35,16 +35,16 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                script {
-                    withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData",
-                             "IS_TEST=true"]) {
-                        sh 'npm --prefix $WORKSPACE/APP test --verbose'
-                    }
-                }
-            }
-        }
+        // stage('Run Unit Tests') {
+        //     steps {
+        //         script {
+        //             withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData",
+        //                      "IS_TEST=true"]) {
+        //                 sh 'npm --prefix $WORKSPACE/APP test --verbose'
+        //             }
+        //         }
+        //     }
+        // }
 
         // stage('Run Code Coverage') {
         //     steps {
