@@ -21,7 +21,7 @@ const uri = process.env.MONGO_URI ||
 
     console.log(isTest);
     console.log(uri);
-if(isTest == true)
+if(isTest == 'true')
 {
     console.log("without tls");
     mongoose.connect(uri, {
