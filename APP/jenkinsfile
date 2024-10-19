@@ -162,11 +162,10 @@ pipeline {
                         // Read the Terraform output and export it as environment variables
                         def output = readJSON text: env.TERRAFORM_OUTPUT
                         def envVars = []
-
-                        // Loop through output to create environment variables
-                        output.each { key, value ->
-                            envVars.add("${key}=${value.value}")
-                        }
+                        envVars.add("MONGO_URI=utput.mongo_uri.value")
+                        envVars.add("HOST_IP=output.host_ip.value")
+                        envVars.add("HOST_USER=output.host_user.value")
+                        envVars.add("HOST_BECOME_PASS=output.host_become_pass.value")
 
                         envVars.add("HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2")
                         // Use withEnv to set the environment variables
