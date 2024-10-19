@@ -159,24 +159,39 @@ pipeline {
             steps {
                 script {
                     dir('./Ansible') {
+                        // Read the Terraform output and export it as environment variables
+                        def output = readJSON file: 'terraform_output.json'
+                        def envVars = []
+
+                        // Loop through output to create environment variables
+                        output.each { key, value ->
+                            envVars.add("${key}=${value.value}")
+                        }
+
+                        envVars.add("HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2")
+                        // Use withEnv to set the environment variables
+                        withEnv(envVars) {
+                            sh 'ansible-playbook -i inventory.yml playbook.yml'
+                        }
+
                       
-                        def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-                        def host_ip = terraformOutputJson.host_ip.value
-                        def mongo_uri = terraformOutputJson.mongo_uri.value
-                        def host_user = terraformOutputJson.host_user.value
-                        def host_become_pass = terraformOutputJson.host_become_pass.value
+                        // def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
+                        // def host_ip = terraformOutputJson.host_ip.value
+                        // def mongo_uri = terraformOutputJson.mongo_uri.value
+                        // def host_user = terraformOutputJson.host_user.value
+                        // def host_become_pass = terraformOutputJson.host_become_pass.value
                        
-                        sh """
-                        export HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        printenv
-                        ansible-playbook -i inventory.yml \
-                        --extra-vars 'mongo_uri=${mongo_uri} \
-                        host_ip=${host_ip} \
-                        host_user=${host_user} \
-                        host_become_pass=${host_become_pass}' \
-                        playbook.yml
-                        """
+                        // sh """
+                        // export HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2
+                        // export ANSIBLE_HOST_KEY_CHECKING=False
+                        // printenv
+                        // ansible-playbook -i inventory.yml \
+                        // --extra-vars 'mongo_uri=${mongo_uri} \
+                        // host_ip=${host_ip} \
+                        // host_user=${host_user} \
+                        // host_become_pass=${host_become_pass}' \
+                        // playbook.yml
+                        // """
                     }
                 }
             }
