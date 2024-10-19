@@ -3,71 +3,16 @@
   hosts: all
   become: true
   gather_facts: false
-  gather_facts: false
 
   vars:
     app_name: "{{ lookup('env', 'APP_NAME') }}"
     app_img: "{{ lookup('env', 'APP_IMG') }}"
     mongo_uri: "{{ lookup('env', 'MONGO_URI') }}"
-    docker_path: /usr/app
-    local_path: ../files
 
   tasks:
-    - name: Check if the file exists
-      stat:
-        path: "{{ docker_path }}/{{ mongo_pem_file }}" # Specify the path to the file
-      register: file_stat
-
-    - name: Create the directory for uploaded files
-      file:
-        path: "{{ docker_path }}" # Specify the path where you want to create the directory
-        state: directory
-        mode: "0755"
-      when: not file_stat.stat.exists
-
-    - name: Copy mongo_pem_file.txt to the remote host
-      copy:
-        src: files/{{ mongo_pem_file }} # Path relative to playbook.yml
-        dest: "{{ docker_path }}/{{ mongo_pem_file }}" # Destination path on the remote host
-      when: not file_stat.stat.exists
-
-    - name: Copy mongo_db_file.txt to the remote host
-      copy:
-        src: files/{{ mongo_db_file }} # Path relative to playbook.yml
-        dest: "{{ docker_path }}/{{ mongo_db_file }}" # Destination path on the remote host
-      when: not file_stat.stat.exists
-
     - name: Update APT package cache
       apt:
         update_cache: yes
-
-    - name: Ensure Python 3 is installed
-      apt:
-        name: python3
-        state: present
-        update_cache: yes
-
-    - name: Ensure pip is installed
-      apt:
-        name: python3-pip
-        state: present
-
-    - name: Ensure python3-venv is installed
-      apt:
-        name: python3-venv
-        state: present
-
-    - name: Create a Python virtual environment
-      command: python3 -m venv {{ venv_path }}
-      args:
-        creates: "{{ venv_path }}"
-
-    - name: Install pip packages in the virtual environment
-      command: "{{ venv_path }}/bin/pip install docker"
-
-    - name: Set the Python interpreter to the virtual environment
-      set_fact:
-        ansible_python_interpreter: "{{ venv_path }}/bin/python"
 
     - name: Prepare Docker
       block:
@@ -102,4 +47,3 @@
               - "3000:3000"
             env:
               MONGO_URI: "{{ mongo_uri }}"
-          register: container_status

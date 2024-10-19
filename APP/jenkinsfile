@@ -6,7 +6,7 @@ pipeline {
         DOCKER_CREDS = credentials('dockerhub-credentials')
         EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
         APP_IMG="${DOCKER_HUB_REPO}:${env.BUILD_NUMBER}"
-        APP_NAME='SolarApp'
+        APP_NAME='solar-app'
         SSH_KEY=credentials('ssh_prv')
         AWS_REGION="us-east-2"
     }
@@ -187,7 +187,6 @@ pipeline {
                         host_ip=${host_ip} \
                         host_user=${host_user} \
                         host_become_pass=${host_become_pass} \
-                        app_name=solar-app' \
                         playbook.yml
                         """
                     }
