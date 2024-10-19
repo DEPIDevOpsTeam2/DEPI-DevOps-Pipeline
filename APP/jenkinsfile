@@ -184,7 +184,7 @@ pipeline {
                         def host_become_pass = terraformOutputJson.host_become_pass.value
 
                         sh """
-                        export HOST_SSH_PRV_KEY=/home/${USER}/.ssh/id_aws_ec2
+                        export HOST_SSH_PRV_KEY=/home/$(whoami)/.ssh/id_aws_ec2
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         ansible-playbook -i inventory.yml \
                         --extra-vars 'mongo_uri=${mongo_uri} \
