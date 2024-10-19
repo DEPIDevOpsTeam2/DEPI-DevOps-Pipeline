@@ -171,6 +171,7 @@ pipeline {
                         envVars.add("HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2")
                         // Use withEnv to set the environment variables
                         withEnv(envVars) {
+                            sh ' printenv '
                             sh 'ansible-playbook -i inventory.yml playbook.yml'
                         }
 
