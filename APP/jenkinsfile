@@ -187,14 +187,25 @@ pipeline {
                         def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
-                        export HOST_IP="18.217.68.10"
-                        printenv HOST_IP
-                        //HOST_IP=${host_ip}\
+                        
+                        export HOST_IP=${host_ip}
+                        export MONGO_URI=${mongo_uri}
+                        export HOST_USER=${host_user}
+                        export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
+                        export HOST_BECOME_PASS=${host_become_pass}
+
+                        echo $APP_NAME
+                        echo $APP_IMG
+                        echo $HOST_IP
+                        echo $MONGO_URI
+                        echo $HOST_USER
+                        echo $HOST_SSH_PRV_KEY
+                        echo $HOST_BECOME_PASS
+
                         ansible-playbook -i inventory.yml \
-                        --extra-vars 'MONGO_URI=${mongo_uri}\
-                        HOST_USER=${host_user}\
-                        HOST_SSH_PRV_KEY=${host_ssh_prv_key}\
-                        HOST_BECOME_PASS=${host_become_pass}'\
+                        --extra-vars '\
+                        
+                        
                         playbook.yml
                         """
                     }
