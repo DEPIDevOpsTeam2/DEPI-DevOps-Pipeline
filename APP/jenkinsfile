@@ -186,7 +186,7 @@ pipeline {
                         --extra-vars 'mongo_uri=${mongo_uri} \
                         host_ip=${host_ip} \
                         host_user=${host_user} \
-                        host_become_pass=${host_become_pass} \
+                        host_become_pass=${host_become_pass}' \
                         playbook.yml
                         """
                     }
