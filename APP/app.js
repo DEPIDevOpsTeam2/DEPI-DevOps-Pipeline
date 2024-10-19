@@ -19,11 +19,10 @@ const isTest = process.env.IS_TEST || false;
 const uri = process.env.MONGO_URI ||
     'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
 
-    console.log(isTest);
-    console.log(uri);
+
 if(isTest == 'true')
 {
-    console.log("without tls");
+    
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -38,7 +37,7 @@ if(isTest == 'true')
     });
 }
 else{
-    console.log("with tls");
+  
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,

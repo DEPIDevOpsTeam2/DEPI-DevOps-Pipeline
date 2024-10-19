@@ -34,6 +34,20 @@ pipeline {
                 sh 'npm --prefix $WORKSPACE/APP install'
             }
         }
+        stage('Run APP-Insert Data') {
+            steps {
+                script {
+                    withEnv(["MONGO_URI=mongodb://admin:admin@localhost:27017/",
+                             "IS_TEST=true"]) {
+                               
+                        sh '''
+                        npm --prefix $WORKSPACE/APP start --verbose
+                        '''
+                    }
+                }
+            }
+        }
+
 
         stage('Run Unit Tests') {
             steps {
@@ -49,20 +63,20 @@ pipeline {
             }
         }
 
-        // stage('Run Code Coverage') {
-        //     steps {
-        //         withEnv(["MONGO_URI=mongodb+srv://superuser:SuperPassword@supercluster.d83jj.mongodb.net/superData",
-        //                      "IS_TEST=true"]) {
-        //             sh 'npm --prefix $WORKSPACE/APP run coverage'
-        //             publishHTML target: [
-        //                 reportName: 'Coverage Report',
-        //                 reportDir: 'coverage',
-        //                 reportFiles: 'index.html',
-        //                 alwaysLinkToLastBuild: true
-        //             ]
-        //         }
-        //     }
-        // }
+        stage('Run Code Coverage') {
+            steps {
+               withEnv(["MONGO_URI=mongodb://admin:admin@localhost:27017/",
+                             "IS_TEST=true"])  {
+                    sh 'npm --prefix $WORKSPACE/APP run coverage'
+                    publishHTML target: [
+                        reportName: 'Coverage Report',
+                        reportDir: 'coverage',
+                        reportFiles: 'index.html',
+                        alwaysLinkToLastBuild: true
+                    ]
+                }
+            }
+        }
 
         stage('Prepare Docker Image') {
             steps {
