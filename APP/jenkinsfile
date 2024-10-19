@@ -43,7 +43,6 @@ pipeline {
                                
                         sh '''
                         printenv
-                        cat ~/.bashrc
                         npm --prefix $WORKSPACE/APP test --verbose
                         '''
                     }
