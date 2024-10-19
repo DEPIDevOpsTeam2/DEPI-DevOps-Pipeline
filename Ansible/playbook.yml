@@ -1,6 +1,6 @@
 ---
 - name: EC2 Instance Configration
-  hosts: all
+  hosts: ec2
   become: true
   gather_facts: false
 

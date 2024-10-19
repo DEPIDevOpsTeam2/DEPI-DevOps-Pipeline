@@ -1,7 +1,7 @@
 ---
 aws:
   hosts:
-    local:
+    ec2:
       ansible_host: "{{ lookup('env', 'HOST_IP') }}"
       ansible_user: "{{ lookup('env', 'HOST_USER') }}"
       ansible_become_pass: "{{ lookup('env', 'HOST_BECOME_PASS') }}"
