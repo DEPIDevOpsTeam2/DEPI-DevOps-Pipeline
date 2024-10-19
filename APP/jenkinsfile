@@ -151,26 +151,6 @@ pipeline {
              steps {
                 script {
                     echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
-                    // sh '''
-                    // USER=$(whoami)
-                    // ssh_prv="/home/${USER}/.ssh/id_aws_ec2"
-                    // ssh_pub="/home/${USER}/.ssh/id_aws_ec2.pub"
-                    // if [ -e "$ssh_prv" ]; then
-                    //     echo "Private key exists."
-                    // else
-                    //     touch /home/${USER}/.ssh/id_aws_ec2
-                    // fi
-                    // if [ -e "$ssh_pub" ]; then
-                    //     echo "Public key exists."
-                    // else
-                    //     touch /home/${USER}/.ssh/id_aws_ec2.pub
-                    // fi
-                    // echo $SSH_KEY_USR
-                    // echo $SSH_KEY_PSW
-                    // echo $SSH_KEY_USR > /home/${USER}/.ssh/id_aws_ec2.pub
-                    // echo $SSH_KEY_PSW > /home/${USER}/.ssh/id_aws_ec2
-                    // export HOST_SSH_PRV_KEY=/home/${USER}/.ssh/id_aws_ec2
-                    // '''
                 }
             }
         }
@@ -189,6 +169,7 @@ pipeline {
                         sh """
                         export HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2
                         export ANSIBLE_HOST_KEY_CHECKING=False
+                        printenv
                         ansible-playbook -i inventory.yml \
                         --extra-vars 'mongo_uri=${mongo_uri} \
                         host_ip=${host_ip} \
