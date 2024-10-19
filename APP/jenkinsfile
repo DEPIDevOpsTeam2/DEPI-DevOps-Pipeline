@@ -174,7 +174,10 @@ pipeline {
                         //     sh 'ansible-playbook -i inventory.yml playbook.yml'
 
                         // }
-
+                        //echo $HOST_USER
+                        //echo $HOST_BECOME_PASS
+                        //echo $HOST_SSH_PRV_KEY
+                        //echo $MONGO_URI
                       
                         def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
                         def host_ip = terraformOutputJson.host_ip.value
@@ -186,10 +189,6 @@ pipeline {
                         export ANSIBLE_HOST_KEY_CHECKING=False
                         export HOST_IP="18.217.68.10"
                         printenv HOST_IP
-                        //echo $HOST_USER
-                        //echo $HOST_BECOME_PASS
-                        //echo $HOST_SSH_PRV_KEY
-                        //echo $MONGO_URI
                         //HOST_IP=${host_ip}\
                         ansible-playbook -i inventory.yml \
                         --extra-vars 'MONGO_URI=${mongo_uri}\
