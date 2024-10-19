@@ -182,6 +182,7 @@ pipeline {
                         def mongo_uri = terraformOutputJson.mongo_uri.value
                         def host_user = terraformOutputJson.host_user.value
                         def host_become_pass = terraformOutputJson.host_become_pass.value
+                        env.HOST_SSH_PRV_KEY="/home/jenkins/.ssh/id_aws_ec2"
                       
                         sh """
                         export ANSIBLE_HOST_KEY_CHECKING=False
