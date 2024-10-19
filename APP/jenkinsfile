@@ -202,11 +202,7 @@ pipeline {
                         echo $HOST_SSH_PRV_KEY
                         echo $HOST_BECOME_PASS
 
-                        ansible-playbook -i inventory.yml \
-                        --extra-vars '\
-                        
-                        
-                        playbook.yml
+                        ansible-playbook -i inventory.yml playbook.yml
                         """
                     }
                 }
