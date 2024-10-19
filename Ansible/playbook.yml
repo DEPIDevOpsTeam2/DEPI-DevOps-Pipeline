@@ -3,17 +3,14 @@
   hosts: all
   become: true
   gather_facts: false
+  gather_facts: false
 
   vars:
     app_name: "{{ lookup('env', 'APP_NAME') }}"
     app_img: "{{ lookup('env', 'APP_IMG') }}"
     mongo_uri: "{{ lookup('env', 'MONGO_URI') }}"
-    mongo_db: "{{ lookup('env', 'MONGO_DB') }}"
-    mongo_collection: "{{ lookup('env', 'MONGO_COLLECTION') }}"
-    mongo_pem_file: global-bundle.pem
-    mongo_db_file: superData.planets.json
     docker_path: /usr/app
-    venv_path: /opt/myenv
+    local_path: ../files
 
   tasks:
     - name: Check if the file exists
@@ -92,13 +89,7 @@
             state: started
             enabled: yes
           when: docker_installed.rc != 0
-          tags: docker
-          register: docker_service_started
-
-        - name: Check if the Docker container exists
-          command: docker ps -q -f name={{ app_name }}
-          register: existing_container_id
-          ignore_errors: true
+          tags: docker        
 
         - name: Create Docker container if it does not exist
           docker_container:
@@ -111,12 +102,4 @@
               - "3000:3000"
             env:
               MONGO_URI: "{{ mongo_uri }}"
-              MONGO_COLLECTION: "{{ mongo_collection }}"
-              S3_mongo_db_file: "{{ mongo_db_file }}"
           register: container_status
-
-        - name: Copy pem file to Docker container
-          command: docker cp "{{ docker_path }}/{{ mongo_pem_file }}" {{ app_name }}:{{ docker_path }}/{{ mongo_pem_file }}
-
-        - name: Copy db file to Docker container
-          command: docker cp "{{ docker_path }}/{{ mongo_db_file }}" {{ app_name }}:{{ docker_path }}/{{ mongo_db_file }}

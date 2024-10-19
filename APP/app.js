@@ -11,11 +11,46 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
-const collection = process.env.MONGO_COLLECTION || "planets";
-const pemFilePath = '/usr/app/mongodb.pem';
-const dataFilePath = "/usr/app/superData.planets.json";
+const dbCollection = "planets";
+
+const pemFile = path.join(__dirname, "DB","global-bundle.pem"); 
+const dataFile = path.join(__dirname, "DB","superData.planets.json");
+const isTest = process.env.IS_TEST || false;
 const uri = process.env.MONGO_URI ||
-    'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solar-system-db?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
+    'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
+
+if(isTest == true)
+{
+    mongoose.connect(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    }, function (err) {
+        if (err) {
+            console.log("error!! " + err);
+        } else {
+            console.log("MongoDB Connection Successful");
+    
+            checkAndInsertData();
+        }
+    });
+}
+else{
+    mongoose.connect(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        tls: true,
+        tlsCAFile: pemFile
+    }, function (err) {
+        if (err) {
+            console.log("error!! " + err);
+        } else {
+            console.log("MongoDB Connection Successful");
+    
+            checkAndInsertData();
+        }
+    });
+}
+
 
 // Planet schema
 const planetSchema = new mongoose.Schema({
@@ -27,61 +62,18 @@ const planetSchema = new mongoose.Schema({
     distance: String
 });
 
-const Planet = mongoose.model(collection, planetSchema);
-
-function fileExists(filePath) {
-    try {
-        fs.accessSync(filePath, fs.constants.F_OK);
-        return true;
-    } catch (err) {
-        if (err.code === 'ENOENT') {
-            // File does not exist
-            return false;
-        }
-        // Other errors
-        throw err;
-    }
-}
-
-if (fileExists(pemFilePath)) {
-    console.log('PEM File exists');
-} else {
-    console.log('PEM File does not exist');
-}
-
-if (fileExists(dataFilePath)) {
-    console.log('Data File exists');
-} else {
-    console.log('Data File does not exist');
-}
-
-
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    sslValidate: false,
-    tls: true,
-    tlsCertificateKeyFile: pemFilePath
-}, function (err) {
-    if (err) {
-        console.log("error!! " + err);
-    } else {
-        console.log("MongoDB Connection Successful");
-
-        checkAndInsertData();
-    }
-});
+const Planets = mongoose.model(dbCollection, planetSchema);
 
 // Function to check and insert data
 async function checkAndInsertData() {
     try {
 
-        const count = await Planet.countDocuments();
+        const count = await Planets.countDocuments();
         console.log('Document count:', count);
 
         if (count === 0) {
             console.log('Collection is empty. Inserting data...');
-            const data = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+            const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
 
             // Remove _id if present
             const cleanedData = data.map(item => {
@@ -89,7 +81,7 @@ async function checkAndInsertData() {
                 return item;
             });
 
-            await Planet.insertMany(data);
+            await Planets.insertMany(data);
             console.log('Data inserted successfully');
         } else {
             console.log('Collection already contains data');
@@ -99,9 +91,10 @@ async function checkAndInsertData() {
     }
 }
 
+
 app.post('/planet', function (req, res) {
     // console.log("Received Planet ID " + req.body.id)
-    Planet.findOne({
+    Planets.findOne({
         id: req.body.id
     }, function (err, planetData) {
         if (err) {

@@ -5,7 +5,7 @@ output "host_ip" {
 
 # doc db cluster connection string to be used in Ansible
 output "mongo_uri" {
-  value     = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.solar_system_db.endpoint}:27017/${var.db_name}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+  value     = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.solar_system_db.endpoint}:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
   sensitive = true
 }
 
