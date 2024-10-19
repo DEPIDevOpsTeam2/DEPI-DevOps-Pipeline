@@ -23,6 +23,7 @@ const uri = process.env.MONGO_URI ||
     console.log(uri);
 if(isTest == true)
 {
+    console.log("without tls");
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -37,6 +38,7 @@ if(isTest == true)
     });
 }
 else{
+    console.log("with tls");
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,

@@ -42,7 +42,6 @@ pipeline {
                              "IS_TEST=true"]) {
                                
                         sh '''
-                        printenv
                         npm --prefix $WORKSPACE/APP test --verbose
                         '''
                     }
