@@ -160,7 +160,7 @@ pipeline {
                 script {
                     dir('./Ansible') {
                         // Read the Terraform output and export it as environment variables
-                        def output = readJSON file: 'terraform_output.json'
+                        def output = readJSON text: env.TERRAFORM_OUTPUT
                         def envVars = []
 
                         // Loop through output to create environment variables
