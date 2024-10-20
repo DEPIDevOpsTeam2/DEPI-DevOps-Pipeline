@@ -16,17 +16,17 @@ pipeline {
                 deleteDir()
             }
         }
-        stage('Prepare Jenkins Inputs') {
-            steps {
+        // stage('Prepare Jenkins Inputs') {
+        //     steps {
                
-                echo 'Preparing Jenkins inputs...'
-            }
-        }
-        stage('Checkout Code') {
-            steps {
-                git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
-            }
-        }
+        //         echo 'Preparing Jenkins inputs...'
+        //     }
+        // }
+        // stage('Checkout Code') {
+        //     steps {
+        //         git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
+        //     }
+        // }
 
         stage('Install Dependencies') {
             steps {
@@ -63,13 +63,12 @@ pipeline {
             }
         }
 
-        stage('Prepare Docker Image') {
+        stage('Remove Old Artifacts') {
             steps {
                 script {
                     sh '''
                     cd $WORKSPACE
                     IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$BUILD_NUMBER)
-
                     if [ -n "$IMAGE_EXISTS" ]; then
                         echo "Docker image exists. Deleting existing image..."
                         docker rmi -f $DOCKER_HUB_REPO:$BUILD_NUMBER
@@ -146,7 +145,7 @@ pipeline {
                 }
             }
         }
-        stage('Check Terraform Output') {
+        stage('Verify Infrastructure') {
              steps {
                 script {
                     echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
@@ -155,7 +154,7 @@ pipeline {
             }
         }
 
-        stage('Ansible Playbook Execution') {
+        stage('Configration') {
             steps {
                 script {
                     
@@ -182,31 +181,6 @@ pipeline {
                                     ansible_host: env.HOST_IP
                                 ]
                         )
-                      
-                        // def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-                        // def host_ip = terraformOutputJson.host_ip.value
-                        // def mongo_uri = terraformOutputJson.mongo_uri.value
-                        // def host_user = terraformOutputJson.host_user.value
-                        // def host_become_pass = terraformOutputJson.host_become_pass.value
-                        // def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
-                        // sh """
-                        // export ANSIBLE_HOST_KEY_CHECKING=False
-                        // export HOST_IP=${host_ip}
-                        // export MONGO_URI=${mongo_uri}
-                        // export HOST_USER=${host_user}
-                        // export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
-                        // export HOST_BECOME_PASS=${host_become_pass}
-                        // printenv
-                        // echo "\$APP_NAME"
-                        // echo "\$APP_IMG"
-                        // echo "\$HOST_IP"
-                        // echo "\$MONGO_URI"
-                        // echo "\$HOST_USER"
-                        // echo "\$HOST_SSH_PRV_KEY"
-                        // echo "\$HOST_BECOME_PASS"
-
-                        // ansible-playbook -i inventory.yml playbook.yml
-                        // """
                     }
                 }
             }
