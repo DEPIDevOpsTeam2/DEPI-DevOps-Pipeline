@@ -22,11 +22,11 @@ pipeline {
         //         echo 'Preparing Jenkins inputs...'
         //     }
         // }
-        // stage('Checkout Code') {
-        //     steps {
-        //         git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
-        //     }
-        // }
+        stage('Checkout Code') {
+            steps {
+                git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
+            }
+        }
 
         stage('Install Dependencies') {
             steps {
