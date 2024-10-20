@@ -16,12 +16,7 @@ pipeline {
                 deleteDir()
             }
         }
-        // stage('Prepare Jenkins Inputs') {
-        //     steps {
-               
-        //         echo 'Preparing Jenkins inputs...'
-        //     }
-        // }
+
         stage('Prepare Jenkins Inputs') {
             steps {
                 echo 'Preparing Jenkins inputs...'
@@ -107,15 +102,15 @@ pipeline {
             }
         }
 
-        // stage('Test Docker Container') {
-        //     steps {
-        //         script {
-        //             sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$env.BUILD_NUMBER"
-        //             sh 'sleep 5'
-        //             sh 'curl http://localhost:3000'
-        //         }
-        //     }
-        // }
+        stage('Test Docker Container Local') {
+            steps {
+                script {
+                    sh "docker run -d -p 3000:3000 $DOCKER_HUB_REPO:$env.BUILD_NUMBER"
+                    sh 'sleep 5'
+                    sh 'curl http://localhost:3000'
+                }
+            }
+        }
 
         stage('Provisioning') {
             steps {
@@ -160,19 +155,15 @@ pipeline {
                 script {
                     
                     dir('./Ansible') {
-                        // Execute Terraform output command and capture the output
                     def json = readJSON text: env.TERRAFORM_OUTPUT
-                    // Set environment variables from Terraform outputs
                     env.HOST_IP            = json.host_ip.value
                     env.HOST_USER          = json.host_user.value
                     env.HOST_BECOME_PASS   = json.host_become_pass.value
-                   // env.HOST_SSH_PRV_KEY  = json.host_ssh_prv_key.value
                     env.MONGO_URI          = json.mongo_uri.value
-                    //env.ANSIBLE_HOST_KEY_CHECKING = 'False'  // Disable host key checking
                         ansiblePlaybook(
-                            credentialsId: 'ssh_private_key',    // ID of the credentials to use
-                            inventory: 'inventory.yml', // Path to the inventory file
-                            playbook: 'playbook.yml',       // Path to the Ansible playbook
+                            credentialsId: 'ssh_private_key',   
+                            inventory: 'inventory.yml', 
+                            playbook: 'playbook.yml',       
                             hostKeyChecking: false,
                             colorized: true,
                             extraVars: [
