@@ -18,11 +18,9 @@ const dataFile = path.join(__dirname, "DB","superData.planets.json");
 const isTest = process.env.IS_TEST || false;
 const uri = process.env.MONGO_URI ||
     'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
-
-
-if(isTest == 'true')
+    console.log();
+if(isTest == true)
 {
-    
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
