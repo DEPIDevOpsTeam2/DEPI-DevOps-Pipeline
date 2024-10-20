@@ -3,7 +3,7 @@ aws:
   hosts:
     ec2:
       ansible_host: "{{ lookup('env', 'HOST_IP') }}"
-      ansible_user: "{{ lookup('env', 'HOST_USER') }}"
-      ansible_become_pass: "{{ lookup('env', 'HOST_BECOME_PASS') }}"
-      ansible_ssh_private_key_file: "{{ lookup('env', 'HOST_SSH_PRV_KEY') }}"
-      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      # ansible_user: "{{ lookup('env', 'HOST_USER') }}"
+      # ansible_become_pass: "{{ lookup('env', 'HOST_BECOME_PASS') }}"
+      # ansible_ssh_private_key_file: "{{ lookup('env', 'HOST_SSH_PRV_KEY') }}"
+      # ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

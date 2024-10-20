@@ -151,58 +151,64 @@ pipeline {
              steps {
                 script {
                     echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
+                    // Execute Terraform output command and capture the output
+                    def output = sh(script: 'terraform output -json', returnStdout: true).trim()
+                    def json = readJSON(text: output)
+
+                    // Set environment variables from Terraform outputs
+                    env.HOST_IP            = json.host_ip.value
+                    env.HOST_USER          = json.host_user.value
+                    env.HOST_BECOME_PASS   = json.host_become_pass.value
+                    env.HOST_SSH_PRV_KEY  = json.host_ssh_prv_key.value
+                    env.MONGO_URI          = json.mongo_uri.value
+                    //env.ANSIBLE_HOST_KEY_CHECKING = 'False'  // Disable host key checking
                 }
             }
         }
 
-        stage('Configuration') {
+        stage('Ansible Playbook Execution') {
             steps {
                 script {
                     dir('./Ansible') {
-                        // Read the Terraform output and export it as environment variables
-                        // def output = readJSON text: env.TERRAFORM_OUTPUT
-                        // def envVars = []
-                        // envVars.add("MONGO_URI=utput.mongo_uri.value")
-                        // envVars.add("HOST_IP=output.host_ip.value")
-                        // envVars.add("HOST_USER=output.host_user.value")
-                        // envVars.add("HOST_BECOME_PASS=output.host_become_pass.value")
-
-                        // envVars.add("HOST_SSH_PRV_KEY=/home/jenkins/.ssh/id_aws_ec2")
-                        // // Use withEnv to set the environment variables
-                        // withEnv(envVars) {
-                        //     sh ' printenv '
-                        //     sh 'ansible-playbook -i inventory.yml playbook.yml'
-
-                        // }
-                        //echo $HOST_USER
-                        //echo $HOST_BECOME_PASS
-                        //echo $HOST_SSH_PRV_KEY
-                        //echo $MONGO_URI
+                        
+                        ansiblePlaybook(
+                            credentialsId: 'ssh_private_key',    // ID of the credentials to use
+                            inventory: 'inventory.yml', // Path to the inventory file
+                            playbook: 'playbook.yml',       // Path to the Ansible playbook
+                            hostKeyChecking: false,
+                            colorized: true,
+                            extraVars: [
+                                    app_name: env.APP_NAME,
+                                    app_img: env.APP_IMG,
+                                    mongo_uri: env.MONGO_URI,
+                                    ansible_host: env.HOST_IP
+                                ]
+                        )
                       
-                        def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
-                        def host_ip = terraformOutputJson.host_ip.value
-                        def mongo_uri = terraformOutputJson.mongo_uri.value
-                        def host_user = terraformOutputJson.host_user.value
-                        def host_become_pass = terraformOutputJson.host_become_pass.value
-                        def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
-                        sh """
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        export HOST_IP=${host_ip}
-                        export MONGO_URI=${mongo_uri}
-                        export HOST_USER=${host_user}
-                        export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
-                        export HOST_BECOME_PASS=${host_become_pass}
-                        printenv
-                        echo "\$APP_NAME"
-                        echo "\$APP_IMG"
-                        echo "\$HOST_IP"
-                        echo "\$MONGO_URI"
-                        echo "\$HOST_USER"
-                        echo "\$HOST_SSH_PRV_KEY"
-                        echo "\$HOST_BECOME_PASS"
+                        // def terraformOutputJson = readJSON text: env.TERRAFORM_OUTPUT
+                        // def host_ip = terraformOutputJson.host_ip.value
+                        // def mongo_uri = terraformOutputJson.mongo_uri.value
+                        // def host_user = terraformOutputJson.host_user.value
+                        // def host_become_pass = terraformOutputJson.host_become_pass.value
+                        // def host_ssh_prv_key="/home/jenkins/.ssh/id_aws_ec2"
+                        // sh """
+                        // export ANSIBLE_HOST_KEY_CHECKING=False
+                        // export HOST_IP=${host_ip}
+                        // export MONGO_URI=${mongo_uri}
+                        // export HOST_USER=${host_user}
+                        // export HOST_SSH_PRV_KEY=${host_ssh_prv_key}
+                        // export HOST_BECOME_PASS=${host_become_pass}
+                        // printenv
+                        // echo "\$APP_NAME"
+                        // echo "\$APP_IMG"
+                        // echo "\$HOST_IP"
+                        // echo "\$MONGO_URI"
+                        // echo "\$HOST_USER"
+                        // echo "\$HOST_SSH_PRV_KEY"
+                        // echo "\$HOST_BECOME_PASS"
 
-                        ansible-playbook -i inventory.yml playbook.yml
-                        """
+                        // ansible-playbook -i inventory.yml playbook.yml
+                        // """
                     }
                 }
             }
