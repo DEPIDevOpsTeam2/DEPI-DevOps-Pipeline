@@ -22,8 +22,9 @@ pipeline {
         //         echo 'Preparing Jenkins inputs...'
         //     }
         // }
-        stage('Checkout Code') {
+        stage('Prepare Jenkins Inputs') {
             steps {
+                echo 'Preparing Jenkins inputs...'
                 git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
             }
         }
