@@ -87,7 +87,7 @@ pipeline {
             }
         }
 
-        stage('docker-login') {
+        stage('Docker-login') {
             steps {
                 sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
             }
@@ -150,7 +150,7 @@ pipeline {
             }
         }
 
-        stage('Configration') {
+        stage('Configuration') {
             steps {
                 script {
                     
