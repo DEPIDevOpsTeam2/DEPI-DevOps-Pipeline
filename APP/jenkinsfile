@@ -149,7 +149,7 @@ pipeline {
         stage('Check Terraform Output') {
              steps {
                 script {
-                    sh 'echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"'
+                    echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
                     // Execute Terraform output command and capture the output
                     def output = sh(script: 'terraform output -json', returnStdout: true).trim()
                     def json = readJSON(text: output)
@@ -169,6 +169,7 @@ pipeline {
             steps {
                 script {
                     dir('./Ansible') {
+
                         
                         ansiblePlaybook(
                             credentialsId: 'ssh_private_key',    // ID of the credentials to use
