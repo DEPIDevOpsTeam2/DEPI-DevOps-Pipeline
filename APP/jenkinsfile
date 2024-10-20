@@ -150,6 +150,14 @@ pipeline {
              steps {
                 script {
                     echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
+                    
+                }
+            }
+        }
+
+        stage('Ansible Playbook Execution') {
+            steps {
+                script {
                     // Execute Terraform output command and capture the output
                     def output = sh(script: 'terraform output -json', returnStdout: true).trim()
                     def json = readJSON(text: output)
@@ -161,13 +169,6 @@ pipeline {
                     env.HOST_SSH_PRV_KEY  = json.host_ssh_prv_key.value
                     env.MONGO_URI          = json.mongo_uri.value
                     //env.ANSIBLE_HOST_KEY_CHECKING = 'False'  // Disable host key checking
-                }
-            }
-        }
-
-        stage('Ansible Playbook Execution') {
-            steps {
-                script {
                     dir('./Ansible') {
 
                         
