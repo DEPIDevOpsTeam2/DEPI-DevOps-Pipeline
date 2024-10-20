@@ -13,14 +13,13 @@ app.use(cors())
 
 const dbCollection = "planets";
 
-const pemFile = path.join(__dirname, "DB","global-bundle.pem"); 
-const dataFile = path.join(__dirname, "DB","superData.planets.json");
+const pemFile = path.join(__dirname, "DB", "global-bundle.pem");
+const dataFile = path.join(__dirname, "DB", "superData.planets.json");
 const isTest = process.env.IS_TEST || false;
 const uri = process.env.MONGO_URI ||
     'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
-    console.log();
-if(isTest == 'true')
-{
+console.log();
+if (isTest == 'true') {
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -29,24 +28,25 @@ if(isTest == 'true')
             console.log("error!! " + err);
         } else {
             console.log("MongoDB Connection Successful");
-    
+
             checkAndInsertData();
         }
     });
 }
-else{
-  
+else {
+
     mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         tls: true,
+        sslValidate: false,
         tlsCAFile: pemFile
     }, function (err) {
         if (err) {
             console.log("error!! " + err);
         } else {
             console.log("MongoDB Connection Successful");
-    
+
             checkAndInsertData();
         }
     });
