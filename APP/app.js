@@ -13,7 +13,6 @@ app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
 const dbCollection = "planets";
-const url = 'https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem';
 const pemFile = path.join(__dirname, "DB", "global-bundle.pem");
 const dataFile = path.join(__dirname, "DB", "superData.planets.json");
 const isTest = process.env.IS_TEST || false;
@@ -41,40 +40,21 @@ if (isTest == 'true') {
 }
 else {
 
-    https.get(url, (response) => {
-        // Check if the response status code is OK
-        if (response.statusCode === 200) {
-            // Create a write stream to save the file
-            const fileStream = fs.createWriteStream(pemFile);
-            response.pipe(fileStream);
-
-            fileStream.on('finish', () => {
-                fileStream.close();
-                console.log(`Downloaded and saved to ${pemFile}`);
-
-                mongoose.connect(uri, {
-                    useNewUrlParser: true,
-                    useUnifiedTopology: true,
-                    tls: true,
-                    sslValidate: false,
-                    tlsCAFile: pemFile
-                }, function (err) {
-                    if (err) {
-                        console.log("error!! " + err);
-                    } else {
-                        console.log("MongoDB Connection Successful");
-
-                        checkAndInsertData();
-                    }
-                });
-            });
+    mongoose.connect(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        tls: true,
+        sslValidate: false,
+        tlsCAFile: pemFile
+    }, function (err) {
+        if (err) {
+            console.log("error!! " + err);
         } else {
-            console.error(`Failed to get '${url}' (${response.statusCode})`);
-        }
-    }).on('error', (err) => {
-        console.error(`Error: ${err.message}`);
-    });
+            console.log("MongoDB Connection Successful");
 
+            checkAndInsertData();
+        }
+    });
 }
 
 
