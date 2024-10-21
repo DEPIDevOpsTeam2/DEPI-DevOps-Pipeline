@@ -104,14 +104,14 @@ pipeline {
 
         stage('Test Docker Container Local') {
             steps {
-                script {
+                // script {
 
-                    // sh 'docker run -d -p 3000:3000 --name app $DOCKER_HUB_REPO:$env.BUILD_NUMBER' 
-                    // sh 'sleep 5'
-                    // sh 'curl http://localhost:3000'
-                    // sh 'docker stop $APP_NAME'
-                    // sh 'docker rm $APP_NAME'
-                }
+                //     // sh 'docker run -d -p 3000:3000 --name app $DOCKER_HUB_REPO:$env.BUILD_NUMBER' 
+                //     // sh 'sleep 5'
+                //     // sh 'curl http://localhost:3000'
+                //     // sh 'docker stop $APP_NAME'
+                //     // sh 'docker rm $APP_NAME'
+                // }
             }
         }
 
