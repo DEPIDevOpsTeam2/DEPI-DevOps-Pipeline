@@ -6,19 +6,25 @@ const mongoose = require("mongoose");
 const app = express();
 const cors = require('cors')
 const fs = require('fs');
+const https = require('https');
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
 const dbCollection = "planets";
-
+const url = 'https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem';
 const pemFile = path.join(__dirname, "DB", "global-bundle.pem");
 const dataFile = path.join(__dirname, "DB", "superData.planets.json");
 const isTest = process.env.IS_TEST || false;
 const uri = process.env.MONGO_URI ||
     'mongodb://db_admin:db_12345@solar-system-db.cluster-cxu20w2ieheu.us-east-2.docdb.amazonaws.com:27017/solarDB?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false';
-console.log();
+
+console.log('uri: ' + uri);
+
+console.log('isTest: ' + isTest);
+
+
 if (isTest == 'true') {
     mongoose.connect(uri, {
         useNewUrlParser: true,
@@ -35,21 +41,40 @@ if (isTest == 'true') {
 }
 else {
 
-    mongoose.connect(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        tls: true,
-        sslValidate: false,
-        tlsCAFile: pemFile
-    }, function (err) {
-        if (err) {
-            console.log("error!! " + err);
-        } else {
-            console.log("MongoDB Connection Successful");
+    https.get(url, (response) => {
+        // Check if the response status code is OK
+        if (response.statusCode === 200) {
+            // Create a write stream to save the file
+            const fileStream = fs.createWriteStream(pemFile);
+            response.pipe(fileStream);
 
-            checkAndInsertData();
+            fileStream.on('finish', () => {
+                fileStream.close();
+                console.log(`Downloaded and saved to ${pemFile}`);
+
+                mongoose.connect(uri, {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true,
+                    tls: true,
+                    sslValidate: false,
+                    tlsCAFile: pemFile
+                }, function (err) {
+                    if (err) {
+                        console.log("error!! " + err);
+                    } else {
+                        console.log("MongoDB Connection Successful");
+
+                        checkAndInsertData();
+                    }
+                });
+            });
+        } else {
+            console.error(`Failed to get '${url}' (${response.statusCode})`);
         }
+    }).on('error', (err) => {
+        console.error(`Error: ${err.message}`);
     });
+
 }
 
 
