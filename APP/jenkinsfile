@@ -106,7 +106,7 @@ pipeline {
             steps {
                 script {
 
-                    sh 'docker run -d -p 3000:3000 --name $APP_NAME $DOCKER_HUB_REPO:$env.BUILD_NUMBER' 
+                    sh 'docker run -d -p 3000:3000 --name "$APP_NAME" "$DOCKER_HUB_REPO:$env.BUILD_NUMBER"' 
                     sh 'sleep 5'
                     sh 'curl http://localhost:3000'
                     sh 'docker stop $APP_NAME'
