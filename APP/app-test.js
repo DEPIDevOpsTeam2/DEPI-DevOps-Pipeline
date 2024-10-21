@@ -1,30 +1,30 @@
-// let mongoose = require("mongoose");
-// let server = require("./app");
-// let chai = require("chai");
-// let chaiHttp = require("chai-http");
+let mongoose = require("mongoose");
+let server = require("./app");
+let chai = require("chai");
+let chaiHttp = require("chai-http");
 
 
-// // Assertion 
-// chai.should();
-// chai.use(chaiHttp); 
+// Assertion 
+chai.should();
+chai.use(chaiHttp); 
 
-// describe('Planets API Suite', () => {
+ describe('Planets API Suite', () => {
 
-//     describe('Fetching Planet Details', () => {
-//         it('it should fetch a planet named Mercury', (done) => {
-//             let payload = {
-//                 id: 1
-//             }
-//           chai.request(server)
-//               .post('/planet')
-//               .send(payload)
-//               .end((err, res) => {
-//                     res.should.have.status(200);
-//                     res.body.should.have.property('id').eql(1);
-//                     res.body.should.have.property('name').eql('Mercury');
-//                 done();
-//               });
-//         });
+    describe('Fetching Planet Details', () => {
+        it('it should fetch a planet named Mercury', (done) => {
+            let payload = {
+                id: 1
+            }
+          chai.request(server)
+              .post('/planet')
+              .send(payload)
+              .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('id').eql(1);
+                    res.body.should.have.property('name').eql('Mercury');
+                done();
+              });
+        });
 
 //         it('it should fetch a planet named Venus', (done) => {
 //             let payload = {
@@ -146,8 +146,8 @@
 //         // });
 
 
-//     });        
-// });
+    });        
+ });
 
 // //Use below test case to achieve coverage
 // describe('Testing Other Endpoints', () => {

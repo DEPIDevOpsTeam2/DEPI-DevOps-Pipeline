@@ -27,7 +27,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm --prefix $WORKSPACE/APP  install'
-                sh 'npm update mocha mocha-junit-reporter --save-dev'
             }
         }
 
