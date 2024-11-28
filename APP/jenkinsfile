@@ -1,0 +1,193 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_REPO = 'shaimaamelsaadi/solar_system'
+        DOCKER_CREDS = credentials('dockerhub-credentials')
+        EMAIL_RECIPIENTS = 'shimaaelsaadi@gmail.com' 
+        APP_IMG="${DOCKER_HUB_REPO}:${env.BUILD_NUMBER}"
+        APP_NAME='solar-app'
+        AWS_REGION="us-east-2"
+    }
+
+    stages {
+        stage('Cleanup') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Prepare Jenkins Inputs') {
+            steps {
+                echo 'Preparing Jenkins inputs...'
+                git credentialsId: 'github_push', branch: 'production', url: 'https://github.com/DEPIDevOpsTeam2/DEPI-DevOps-Pipeline'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm --prefix $WORKSPACE/APP  install'
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    withEnv(["MONGO_URI=mongodb://admin:admin@localhost:27017/",
+                             "IS_TEST=true"]) {
+                               
+                        sh '''
+                        npm --prefix $WORKSPACE/APP test --verbose
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run Code Coverage') {
+            steps {
+               withEnv(["MONGO_URI=mongodb://admin:admin@localhost:27017/",
+                             "IS_TEST=true"])  {
+                    sh 'npm --prefix $WORKSPACE/APP run coverage'
+                    publishHTML target: [
+                        reportName: 'Coverage Report',
+                        reportDir: 'coverage',
+                        reportFiles: 'index.html',
+                        alwaysLinkToLastBuild: true
+                    ]
+                }
+            }
+        }
+
+        stage('Remove Old Artifacts') {
+            steps {
+                script {
+                    sh '''
+                    cd $WORKSPACE
+                    IMAGE_EXISTS=$(docker images -q $DOCKER_HUB_REPO:$BUILD_NUMBER)
+                    if [ -n "$IMAGE_EXISTS" ]; then
+                        echo "Docker image exists. Deleting existing image..."
+                        docker rmi -f $DOCKER_HUB_REPO:$BUILD_NUMBER
+                    else
+                        echo "Docker image does not exist. Proceeding to build a new image..."
+                    fi
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh '''
+                    cd $WORKSPACE/APP
+                    docker build -t $DOCKER_HUB_REPO:$BUILD_NUMBER .
+                    '''
+                }
+            }
+        }
+
+        stage('Docker-login') {
+            steps {
+                sh "docker login --username $DOCKER_CREDS_USR --password $DOCKER_CREDS_PSW"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    def app = docker.image("$DOCKER_HUB_REPO:${env.BUILD_NUMBER}")
+                    app.push()
+                }
+            }
+        }
+
+        stage('Provisioning') {
+            steps {
+                script {
+                   
+                    dir('./Terraform') {
+                        sh 'terraform init'
+                       withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding', 
+                            credentialsId: 'AWS_CREDS', 
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ]]) {
+                            sh '''
+                            terraform refresh \
+                            -var "aws_access_key=$AWS_ACCESS_KEY_ID" \
+                            -var "aws_secret_key=$AWS_SECRET_ACCESS_KEY" \
+                            -var "aws_region=${AWS_REGION}"
+                            
+                            terraform apply -auto-approve \
+                            -var "aws_access_key=$AWS_ACCESS_KEY_ID" \
+                            -var "aws_secret_key=$AWS_SECRET_ACCESS_KEY" \
+                            -var "aws_region=${AWS_REGION}"
+                            '''
+                            env.TERRAFORM_OUTPUT = sh(script: 'terraform output -json', returnStdout: true).trim()
+                        }
+                    }
+                }
+            }
+        }
+        stage('Verify Infrastructure') {
+             steps {
+                script {
+                    echo "Terraform Output: ${env.TERRAFORM_OUTPUT}"
+                    
+                }
+            }
+        }
+
+        stage('Configuration') {
+            steps {
+                script {
+                    
+                    dir('./Ansible') {
+                    def json = readJSON text: env.TERRAFORM_OUTPUT
+                    env.HOST_IP            = json.host_ip.value
+                    env.HOST_USER          = json.host_user.value
+                    env.HOST_BECOME_PASS   = json.host_become_pass.value
+                    env.MONGO_URI          = json.mongo_uri.value
+                        ansiblePlaybook(
+                            credentialsId: 'ssh_private_key',   
+                            inventory: 'inventory.yml', 
+                            playbook: 'playbook.yml',       
+                            hostKeyChecking: false,
+                            colorized: true,
+                            extraVars: [
+                                    app_name: env.APP_NAME,
+                                    app_img: env.APP_IMG,
+                                    mongo_uri: env.MONGO_URI,
+                                    ansible_host: env.HOST_IP
+                                ]
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: "${EMAIL_RECIPIENTS}",
+            subject: "✅ Build Success: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+            body: """<p>Good news! The build was successful.</p>
+                     <p><strong>Job:</strong> ${JOB_NAME}</p>
+                     <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
+                     <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
+            mimeType: 'text/html'
+        }
+        failure {
+            mail to: "${EMAIL_RECIPIENTS}",
+                subject: "❌ Build Failed: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                body: """<p>Oops! The build has failed.</p>
+                         <p><strong>Job:</strong> ${JOB_NAME}</p>
+                         <p><strong>Build Number:</strong> ${BUILD_NUMBER}</p>
+                         <p>Check the console output at <a href="${BUILD_URL}">${BUILD_URL}</a></p>""",
+                mimeType: 'text/html'
+        }
+
+    }
+}

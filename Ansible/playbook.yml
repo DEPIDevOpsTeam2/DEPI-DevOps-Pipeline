@@ -1,80 +1,78 @@
 ---
-- name: Provision the EC2 instance
-  hosts: local
+- name: EC2 Instance Configration
+  hosts: ec2
   become: true
+  gather_facts: false
+
+  vars:
+    app_name: "{{ lookup('env', 'APP_NAME') }}"
+    app_img: "{{ lookup('env', 'APP_IMG') }}"
+    mongo_uri: "{{ lookup('env', 'MONGO_URI') }}"
+    venv_path: /opt/myenv # Path to the virtual environment
 
   tasks:
-    - name: Check if Docker is already installed
-      shell: |
-        if ! command -v docker &> /dev/null; then
-            echo "not_installed"
-        else
-            echo "installed"
-        fi
-      register: docker_installed
-      changed_when: false # We don't want to mark this task as changed
-
-    - name: Install prerequisite packages (for Ubuntu)
+    - name: Update APT package cache
       apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
+        update_cache: yes
+
+    - name: Ensure Python 3 is installed
+      apt:
+        name: python3
         state: present
         update_cache: yes
-      when:
-        - docker_installed.stdout == "not_installed"
 
-    - name: Add Docker's official GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-      when:
-        - docker_installed.stdout == "not_installed"
-
-    - name: Set up the Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-        state: present
-      when:
-        - docker_installed.stdout == "not_installed"
-
-    - name: Install Docker
+    - name: Ensure pip is installed
       apt:
-        name: docker-ce
+        name: python3-pip
         state: present
-        update_cache: yes
-      when:
-        - docker_installed.stdout == "not_installed"
 
-    - name: Ensure Docker service is started
-      service:
-        name: docker
-        state: started
-        enabled: yes
+    - name: Ensure python3-venv is installed
+      apt:
+        name: python3-venv
+        state: present
 
-    - name: Get the value of an environment variable
+    - name: Create a Python virtual environment
+      command: python3 -m venv {{ venv_path }}
+      args:
+        creates: "{{ venv_path }}"
+
+    - name: Install pip packages in the virtual environment
+      command: "{{ venv_path }}/bin/pip install docker"
+
+    - name: Set the Python interpreter to the virtual environment
       set_fact:
-        app_img: "{{ lookup('env', 'APP_IMG') }}"
+        ansible_python_interpreter: "{{ venv_path }}/bin/python"
 
-    - name: Display env variable
-      debug:
-        msg: "app image is: {{ app_img }}"
+    - name: Prepare Docker
+      block:
+        - name: Check if Docker is installed
+          command: docker --version
+          register: docker_installed
+          ignore_errors: true
 
-    - name: Gather facts about Docker images
-      docker_image_info:
+        - name: Install Docker on Debian/Ubuntu
+          apt:
+            name: docker.io
+            state: present
+          when: docker_installed.rc != 0
+          tags: docker
 
-    - name: Check if the specified Docker image exists
-      set_fact:
-        container_exists: "{{ item }}"
-      with_items: "{{ docker_images.images }}"
-      when: item.repo_tags is defined and item.repo_tags | select('search', app_img) | list | length > 0
-      register: checked_images
+        - name: Start Docker service
+          service:
+            name: docker
+            state: started
+            enabled: yes
+          when: docker_installed.rc != 0
+          tags: docker
 
-    - name: Create Docker container if it does not exist
-      docker_container:
-        name: solar-app
-        image: "{{ app_img }}"
-        state: started
-      when: checked_images is not defined or checked_images | selectattr('container_exists', 'defined') | list | length == 0
+        - name: Create Docker container if it does not exist
+          docker_container:
+            name: "{{ app_name }}"
+            image: "{{ app_img }}" # img:tag
+            state: started
+            recreate: true
+            restart_policy: unless-stopped
+            ports:
+              - "3000:3000"
+            env:
+              MONGO_URI: "{{ mongo_uri }}"
